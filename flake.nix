@@ -92,9 +92,56 @@
             inherit name src version ldflags buildInputs nativeBuildInputs;
           };
 
-          docker-image = nixops-lib.go.docker-image {
+          mcp-nhost-arm64-darwin = (nixops-lib.go.package {
+            inherit name src version ldflags buildInputs nativeBuildInputs;
+          }).overrideAttrs (old: old // {
+            env = {
+              GOOS = "darwin";
+              GOARCH = "arm64";
+              CGO_ENABLED = "0";
+            };
+          });
+
+          mcp-nhost-amd64-darwin = (nixops-lib.go.package {
+            inherit name src version ldflags buildInputs nativeBuildInputs;
+          }).overrideAttrs (old: old // {
+            env = {
+              GOOS = "darwin";
+              GOARCH = "amd64";
+              CGO_ENABLED = "0";
+            };
+          });
+
+          mcp-nhost-arm64-linux = (nixops-lib.go.package {
+            inherit name src version ldflags buildInputs nativeBuildInputs;
+          }).overrideAttrs (old: old // {
+            env = {
+              GOOS = "linux";
+              GOARCH = "arm64";
+              CGO_ENABLED = "0";
+            };
+          });
+
+          mcp-nhost-amd64-linux = (nixops-lib.go.package {
+            inherit name src version ldflags buildInputs nativeBuildInputs;
+          }).overrideAttrs (old: old // {
+            env = {
+              GOOS = "linux";
+              GOARCH = "amd64";
+              CGO_ENABLED = "0";
+            };
+          });
+
+          docker-image-arm64 = nixops-lib.go.docker-image {
             inherit name version buildInputs;
-            package = mcp-nhost;
+
+            package = mcp-nhost-arm64-linux;
+          };
+
+          docker-image-amd64 = nixops-lib.go.docker-image {
+            inherit name version buildInputs;
+
+            package = mcp-nhost-amd64-linux;
           };
 
           default = mcp-nhost;

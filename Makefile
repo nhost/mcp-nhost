@@ -4,14 +4,13 @@ else
 VERSION=$(shell grep -oP 'version\s*=\s*"\K[^"]+' flake.nix | head -n 1)
 endif
 
+
 ifeq ($(shell uname -m),x86_64)
-  ARCH?=x86_64
+  HOST_ARCH?=x86_64
+  ARCH?=amd64
 else ifeq ($(shell uname -m),arm64)
-  ARCH?=aarch64
-else ifeq ($(shell uname -m),aarch64)
-  ARCH?=aarch64
-else
-  ARCH?=FIXME-$(shell uname -m)
+  HOST_ARCH?=aarch64
+  ARCH?=arm64
 endif
 
 ifeq ($(shell uname -o),Darwin)
@@ -45,26 +44,17 @@ check:   ## Run nix flake check
 	./build/nix.sh flake check --print-build-logs
 
 
-.PHONY: check-dry-run-node
-check-dry-run-node:  ## Returns the derivation of the check
+.PHONY: check-dry-run
+check-dry-run:  ## Run nix flake check
 	@nix build \
 		--dry-run \
 		--json \
 		--print-build-logs \
-		.\#checks.$(ARCH)-$(OS).node-checks | jq -r '.[].outputs.out'
-
-
-.PHONY: check-dry-run-go
-check-dry-run-go:  ## Run nix flake check
-	@nix build \
-		--dry-run \
-		--json \
-		--print-build-logs \
-		.\#checks.$(ARCH)-$(OS).go-checks | jq -r '.[].outputs.out'
+		.\#checks.$(HOST_ARCH)-$(OS).go-checks | jq -r '.[].outputs.out'
 
 
 .PHONY: dev-env-up
-dev-env-up: build-docker-image  ## Starts development environment
+dev-env-up:  ## Starts development environment
 	echo "Nothing to do"
 
 
@@ -80,7 +70,9 @@ dev-env-down:  ## Stops development environment
 
 .PHONY: build
 build:  ## Build application and places the binary under ./result/bin
-	./build/nix.sh build --print-build-logs
+	nix build $(docker-build-options) \
+		.\#mcp-nhost-$(ARCH)-$(OS) \
+		--print-build-logs
 
 
 .PHONY: build-dry-run
@@ -91,6 +83,8 @@ build-dry-run:  ## Run nix flake check
 
 
 .PHONY: build-docker-image
-build-docker-image:  ## Build docker container for native architecture
-	./build/nix-docker-image.sh
-	docker tag mcp-nhost:$(VERSION) nhost/mcp-nhost:0.0.0-dev
+build-docker-image:  ## Build docker image
+	nix build $(docker-build-options) \
+		.\#packages.$(HOST_ARCH)-linux.docker-image-$(ARCH) \
+		--print-build-logs
+	docker load < result

@@ -1,0 +1,60 @@
+---
+on:
+  workflow_call:
+    inputs:
+      NAME:
+        type: string
+        required: true
+      VERSION:
+        type: string
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - name: "Check out repository"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.GIT_REF }}
+          submodules: true
+
+      - name: Compute common env vars
+        id: vars
+        run: |
+          echo "VERSION=$(make get-version VERSION=${{ inputs.VERSION }})" >> $GITHUB_OUTPUT
+
+      - name: "Get artifacts"
+        uses: actions/download-artifact@v4
+        with:
+          path: ~/artifacts
+
+      - name: Upload assets
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export VERSION=${{ steps.vars.outputs.VERSION }}
+
+          mkdir upload
+
+          tar cvzf upload/nhost-mcp-$VERSION-darwin-amd64.tar.gz -C ~/artifacts/nhost-mcp-$VERSION-darwin-amd64 nhost-mcp
+          tar cvzf upload/nhost-mcp-$VERSION-darwin-arm64.tar.gz -C ~/artifacts/nhost-mcp-$VERSION-darwin-arm64 nhost-mcp
+          tar cvzf upload/nhost-mcp-$VERSION-linux-amd64.tar.gz -C ~/artifacts/nhost-mcp-$VERSION-linux-amd64 nhost-mcp
+          tar cvzf upload/nhost-mcp-$VERSION-linux-arm64.tar.gz -C ~/artifacts/nhost-mcp-$VERSION-linux-arm64 nhost-mcp
+
+          cd upload
+          find . -type f -exec sha256sum {} + > ../checksums.txt
+          cd ..
+
+          cat checksums.txt
+
+          gh release upload \
+            --clobber "${{ github.ref_name }}" \
+            ./upload/* checksums.txt
