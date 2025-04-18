@@ -1,5 +1,5 @@
 ---
-name: Release
+name: "release"
 on:
   release:
     types: [published]
@@ -7,31 +7,28 @@ on:
 jobs:
   tests:
     uses: ./.github/workflows/wf_check.yaml
-    with:
-      NAME: hasura-auth
     secrets:
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_PRODUCTION_CORE_ACCOUNT_ID }}
-      NIX_CACHE_PUB_KEY: ${{ secrets.NIX_CACHE_PUB_KEY }}
-      NIX_CACHE_PRIV_KEY: ${{ secrets.NIX_CACHE_PRIV_KEY }}
-
+      NHOST_PAT: ${{ secrets.NHOST_PAT }}
 
   build_artifacts:
+    strategy:
+      matrix:
+        GOOS: ["darwin", "linux"]
+        GOARCH: ["amd64", "arm64"]
     uses: ./.github/workflows/wf_build_artifacts.yaml
     with:
-      NAME: hasura-auth
+      GOOS: ${{ matrix.GOOS }}
+      GOARCH: ${{ matrix.GOARCH }}
       VERSION: ${{ github.ref_name }}
     secrets:
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_PRODUCTION_CORE_ACCOUNT_ID }}
-      NIX_CACHE_PUB_KEY: ${{ secrets.NIX_CACHE_PUB_KEY }}
-      NIX_CACHE_PRIV_KEY: ${{ secrets.NIX_CACHE_PRIV_KEY }}
+      NHOST_PAT: ${{ secrets.NHOST_PAT }}
 
-  push_docker_image:
-    uses: ./.github/workflows/wf_docker_push_image.yaml
+  publish:
+    uses: ./.github/workflows/wf_publish.yaml
     needs:
-      - tests  # we depend of tests here to paralleliza tests and build
+      - tests
       - build_artifacts
     with:
-      NAME: hasura-auth
       VERSION: ${{ github.ref_name }}
     secrets:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}

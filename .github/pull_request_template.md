@@ -1,26 +1,20 @@
-Before submitting this PR:
+## Description
+<!--
+Use one of the following title prefix to categorize the pull request:
+feat:   mark this pull request as a feature
+fix:    mark this pull request as a bug fix
+chore:  mark this pull request as a maintenance item
 
-### Checklist
+To auto merge this pull request when it was approved
+by another member of the organization: set the label `auto-merge`
+-->
+## Problem
+A short description of the problem this PR is addressing.
 
-- [ ] No breaking changes
-- [ ] Tests pass
-- [ ] New features have new tests
-- [ ] Documentation is updated
+## Solution
+A short description of the chosen method to resolve the problem
+with an overview of the logic and implementation details when needed.
 
-### Breaking changes
+## Notes
+Other notes that you want to share but do not fit into _Problem_ or _Solution_.
 
-Avoid breaking changes and regressions. If you feel it is unavoidable, make it explicit in your PR comment so we can review it and see how to handle it.
-
-### Tests
-
-- please make sure your changes pass the current tests (Use the `make test` or the `make watch` command).
-- if you are introducing a new feature, please write as much tests as possible.
-
-### Documentation
-
-Please make sure the documentation is updated accordingly, in particular:
-
-- [Workflows](https://github.com/nhost/hasura-auth/tree/main/docs/workflows). Workflows are [Mermaid sequence diagrams](https://mermaid-js.github.io/mermaid/#/sequenceDiagram)
-- [Schema](https://github.com/nhost/hasura-auth/blob/main/docs/schema.md). The schema in a [Mermaid ER diagram](https://mermaid-js.github.io/mermaid/#/entityRelationshipDiagram)
-- [Environment variables](https://github.com/nhost/hasura-auth/blob/main/docs/environment-variables.md). Please adjust the [.env.example](https://github.com/nhost/hasura-auth/blob/main/.env.example) file accordingly
-- OpenApi specifications. We are using inline [JSDoc annotations](https://www.npmjs.com/package/express-jsdoc-swagger)
