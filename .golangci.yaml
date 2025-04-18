@@ -1,0 +1,35 @@
+---
+linters:
+    enable-all: true
+    disable:
+      - varnamelen
+      - gomoddirectives
+      - nlreturn
+      - wsl
+      - tagliatelle
+      - musttag
+      - depguard
+      - canonicalheader # for some reason it is very unreliable
+      - gci    # we already check the linter did its magic
+      - exportloopref # deprecated
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - funlen
+        - ireturn
+
+    - linters:
+        - lll
+      source: "^//go:generate "
+
+    - linters:
+        - gochecknoglobals
+      text: "Version is a global variable"
+
+    - path: schema\.resolvers\.go
+      linters:
+        - ireturn
+        - lll
+        - gofumpt
