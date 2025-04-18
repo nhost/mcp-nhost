@@ -15,7 +15,11 @@ on:
         type: string
         required: true
     secrets:
-      NHOST_PAT:
+      AWS_ACCOUNT_ID:
+        required: true
+      NIX_CACHE_PUB_KEY:
+        required: true
+      NIX_CACHE_PRIV_KEY:
         required: true
 
 jobs:
@@ -34,7 +38,13 @@ jobs:
         ref: ${{ inputs.GIT_REF }}
         submodules: true
 
-    - uses: cachix/install-nix-action@v27
+    - name: Configure aws
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-nhost-${{ github.event.repository.name }}
+        aws-region: eu-central-1
+
+    - uses: cachix/install-nix-action@v30
       with:
         install_url: "https://releases.nixos.org/nix/nix-2.22.3/install"
         install_options: "--no-daemon"
@@ -42,13 +52,8 @@ jobs:
           experimental-features = nix-command flakes
           sandbox = false
           access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-          substituters = https://cache.nixos.org/?priority=40
-          trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
-
-    - uses: DeterminateSystems/magic-nix-cache-action@v7
-      with:
-        diagnostic-endpoint: ""
-        use-flakehub: false
+          substituters = https://cache.nixos.org/?priority=40 s3://nhost-nix-cache?region=eu-central-1&priority=50
+          trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= ${{ secrets.NIX_CACHE_PUB_KEY }}
 
     - name: Compute common env vars
       id: vars
@@ -92,3 +97,9 @@ jobs:
         path: result
         retention-days: 7
       if: ${{ ( inputs.GOOS == 'linux' ) }}
+
+    - name: "Cache build"
+      run: |
+        nix store sign --key-file <(echo "${{ secrets.NIX_CACHE_PRIV_KEY }}") --all
+        find /nix/store -maxdepth 1 -name "*-*" -type d -exec nix copy --to s3://nhost-nix-cache\?region=eu-central-1 {} \;
+      if: always()

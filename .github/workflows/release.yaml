@@ -8,7 +8,9 @@ jobs:
   tests:
     uses: ./.github/workflows/wf_check.yaml
     secrets:
-      NHOST_PAT: ${{ secrets.NHOST_PAT }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_PRODUCTION_CORE_ACCOUNT_ID }}
+      NIX_CACHE_PUB_KEY: ${{ secrets.NIX_CACHE_PUB_KEY }}
+      NIX_CACHE_PRIV_KEY: ${{ secrets.NIX_CACHE_PRIV_KEY }}
 
   build_artifacts:
     strategy:
@@ -21,7 +23,9 @@ jobs:
       GOARCH: ${{ matrix.GOARCH }}
       VERSION: ${{ github.ref_name }}
     secrets:
-      NHOST_PAT: ${{ secrets.NHOST_PAT }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_PRODUCTION_CORE_ACCOUNT_ID }}
+      NIX_CACHE_PUB_KEY: ${{ secrets.NIX_CACHE_PUB_KEY }}
+      NIX_CACHE_PRIV_KEY: ${{ secrets.NIX_CACHE_PRIV_KEY }}
 
   publish:
     uses: ./.github/workflows/wf_publish.yaml
@@ -31,5 +35,6 @@ jobs:
     with:
       VERSION: ${{ github.ref_name }}
     secrets:
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_PRODUCTION_CORE_ACCOUNT_ID }}
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
