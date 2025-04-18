@@ -3,8 +3,8 @@ name: "check and build"
 on:
   pull_request_target:
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
 
 jobs:
   check-permissions:
