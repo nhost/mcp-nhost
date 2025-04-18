@@ -58,7 +58,9 @@ func (t *Tool) Register(mcpServer *server.Server) error {
 
 type GetGraphqlSchemaRequest struct{}
 
-func (t *Tool) handleGetGraphqlSchema(_ *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
+func (t *Tool) handleGetGraphqlSchema(
+	_ *protocol.CallToolRequest,
+) (*protocol.CallToolResult, error) {
 	return &protocol.CallToolResult{
 		Content: []protocol.Content{
 			protocol.TextContent{

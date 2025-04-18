@@ -27,7 +27,9 @@
             ".golangci.yaml"
             "go.mod"
             "go.sum"
+            "nhost/auth/openapi.yaml"
             "tools/cloud/schema.graphql"
+            (inDirectory "graphql/testdata")
             (inDirectory "vendor")
             isDirectory
             (nix-filter.lib.matchExt "go")

@@ -64,7 +64,12 @@ func ParseSchema(response ResponseIntrospection, filter Filter) string {
 		for _, q := range filter.AllowMutations {
 			if mutation.Name == q.Name {
 				neededMutations[mutation.Name] = mutation
-				collectNeededTypesFromQuery(mutation, neededTypes, availableTypes, !q.DisableNesting)
+				collectNeededTypesFromQuery(
+					mutation,
+					neededTypes,
+					availableTypes,
+					!q.DisableNesting,
+				)
 			}
 		}
 	}
