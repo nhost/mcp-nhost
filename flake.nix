@@ -27,6 +27,7 @@
             ".golangci.yaml"
             "go.mod"
             "go.sum"
+            "tools/cloud/schema.graphql"
             (inDirectory "vendor")
             isDirectory
             (nix-filter.lib.matchExt "go")

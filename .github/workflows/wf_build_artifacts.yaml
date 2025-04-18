@@ -79,6 +79,20 @@ jobs:
         path: result.zip
         retention-days: 7
 
+    - name: "Build docker image"
+      run: |
+        sudo chmod 755 /run/containers
+        sudo mkdir -p "/run/containers/$(id -u runner)"
+        sudo chown runner: "/run/containers/$(id -u runner)"
+        make build-docker-image
+
+    - name: "Push docker image to artifact repository"
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.NAME }}-docker-image-${{ steps.vars.outputs.ARCH }}-${{ steps.vars.outputs.VERSION }}
+        path: result
+        retention-days: 7
+
     - name: "Cache build"
       run: |
         nix store sign --key-file <(echo "${{ secrets.NIX_CACHE_PRIV_KEY }}") --all
