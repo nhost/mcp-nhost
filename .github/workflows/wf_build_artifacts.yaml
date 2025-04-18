@@ -69,7 +69,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: mcp-nhost-${{ steps.vars.outputs.VERSION }}-${{ inputs.GOOS }}-${{ inputs.GOARCH }}
-        path: nhost-mcp-nhost
+        path: mcp-nhost
         retention-days: 7
 
     - name: "Build docker-image"
