@@ -8,7 +8,7 @@ jobs:
   # labeler will label pull requests based on their title.
   # the configuration is at .github/labeler.yml.
   label_pull_request:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-arm
     steps:
       -
         name: Label Pull Request

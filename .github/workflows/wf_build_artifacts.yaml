@@ -20,7 +20,7 @@ on:
 
 jobs:
   artifacts:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-arm
 
     permissions:
       id-token: write
@@ -84,19 +84,6 @@ jobs:
           cp image ../result
       shell: bash
       if: ${{ ( inputs.GOOS == 'linux' && inputs.GOARCH == 'arm64' ) }}
-
-    - name: "Create a new project"
-      run: |
-        export NHOST_DOMAIN=staging.nhost.run
-        export NHOST_CONFIGSERVER_IMAGE=mcp-nhost:${{ steps.vars.outputs.VERSION }}
-
-        mkdir new-project
-        cd new-project
-        ../nhost-mcp-nhost login --pat ${{ secrets.NHOST_PAT }}
-        ../nhost-mcp-nhost init
-        ../nhost-mcp-nhost up --down-on-error
-        ../nhost-mcp-nhost down
-      if: ${{ ( inputs.GOOS == 'linux' && inputs.GOARCH == 'amd64' ) }}
 
     - name: "Push docker-image to artifact repository"
       uses: actions/upload-artifact@v4
