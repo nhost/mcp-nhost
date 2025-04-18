@@ -44,9 +44,9 @@ jobs:
         role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-nhost-${{ github.event.repository.name }}
         aws-region: eu-central-1
 
-    - uses: cachix/install-nix-action@v30
+    - uses: cachix/install-nix-action@v31
       with:
-        install_url: "https://releases.nixos.org/nix/nix-2.22.3/install"
+        install_url: "https://releases.nixos.org/nix/nix-2.26.3/install"
         install_options: "--no-daemon"
         extra_nix_config: |
           experimental-features = nix-command flakes
