@@ -11,6 +11,9 @@ ifeq ($(shell uname -m),x86_64)
 else ifeq ($(shell uname -m),arm64)
   HOST_ARCH?=aarch64
   ARCH?=arm64
+else ifeq ($(shell uname -m),aarch64)
+  HOST_ARCH?=aarch64
+   ARCH?=aarch64
 endif
 
 ifeq ($(shell uname -o),Darwin)
