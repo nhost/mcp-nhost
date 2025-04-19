@@ -29,6 +29,7 @@
             "go.sum"
             "nhost/auth/openapi.yaml"
             "tools/cloud/schema.graphql"
+            "tools/cloud/schema-with-mutations.graphql"
             (inDirectory "graphql/testdata")
             (inDirectory "vendor")
             isDirectory

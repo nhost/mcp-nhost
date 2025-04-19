@@ -13,8 +13,8 @@ import (
 
 var Version = "dev"
 
-func main() {
-	cmd := &cli.Command{ //nolint:exhaustruct
+func Command() *cli.Command {
+	return &cli.Command{ //nolint:exhaustruct
 		Name:  "nhost-mcp",
 		Usage: "Nhost's Model Context Protocol (MCP) server",
 		Commands: []*cli.Command{
@@ -24,6 +24,10 @@ func main() {
 		},
 		Version: Version,
 	}
+}
+
+func main() {
+	cmd := Command()
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)

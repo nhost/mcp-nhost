@@ -636,6 +636,538 @@ input Boolean_comparison_exp {
   _nin: [Boolean!]
 }
 
+input ConfigAIAutoEmbeddingsUpdateInput {
+  synchPeriodMinutes: ConfigUint32
+}
+
+input ConfigAIOpenaiUpdateInput {
+  apiKey: String
+  organization: String
+}
+
+input ConfigAIResourcesUpdateInput {
+  compute: ConfigComputeResourcesUpdateInput
+}
+
+input ConfigAIUpdateInput {
+  autoEmbeddings: ConfigAIAutoEmbeddingsUpdateInput
+  openai: ConfigAIOpenaiUpdateInput
+  resources: ConfigAIResourcesUpdateInput
+  version: String
+  webhookSecret: String
+}
+
+input ConfigAuthElevatedPrivilegesUpdateInput {
+  mode: String
+}
+
+input ConfigAuthMethodAnonymousUpdateInput {
+  enabled: Boolean
+}
+
+input ConfigAuthMethodEmailPasswordUpdateInput {
+  emailVerificationRequired: Boolean
+  hibpEnabled: Boolean
+  passwordMinLength: ConfigUint8
+}
+
+input ConfigAuthMethodEmailPasswordlessUpdateInput {
+  enabled: Boolean
+}
+
+input ConfigAuthMethodOauthAppleUpdateInput {
+  audience: String
+  clientId: String
+  enabled: Boolean
+  keyId: String
+  privateKey: String
+  scope: [String!]
+  teamId: String
+}
+
+input ConfigAuthMethodOauthAzureadUpdateInput {
+  clientId: String
+  clientSecret: String
+  enabled: Boolean
+  tenant: String
+}
+
+input ConfigAuthMethodOauthTwitterUpdateInput {
+  consumerKey: String
+  consumerSecret: String
+  enabled: Boolean
+}
+
+input ConfigAuthMethodOauthUpdateInput {
+  apple: ConfigAuthMethodOauthAppleUpdateInput
+  azuread: ConfigAuthMethodOauthAzureadUpdateInput
+  bitbucket: ConfigStandardOauthProviderUpdateInput
+  discord: ConfigStandardOauthProviderWithScopeUpdateInput
+  facebook: ConfigStandardOauthProviderWithScopeUpdateInput
+  github: ConfigStandardOauthProviderWithScopeUpdateInput
+  gitlab: ConfigStandardOauthProviderWithScopeUpdateInput
+  google: ConfigStandardOauthProviderWithScopeUpdateInput
+  linkedin: ConfigStandardOauthProviderWithScopeUpdateInput
+  spotify: ConfigStandardOauthProviderWithScopeUpdateInput
+  strava: ConfigStandardOauthProviderWithScopeUpdateInput
+  twitch: ConfigStandardOauthProviderWithScopeUpdateInput
+  twitter: ConfigAuthMethodOauthTwitterUpdateInput
+  windowslive: ConfigStandardOauthProviderWithScopeUpdateInput
+  workos: ConfigAuthMethodOauthWorkosUpdateInput
+}
+
+input ConfigAuthMethodOauthWorkosUpdateInput {
+  clientId: String
+  clientSecret: String
+  connection: String
+  enabled: Boolean
+  organization: String
+}
+
+input ConfigAuthMethodOtpEmailUpdateInput {
+  enabled: Boolean
+}
+
+input ConfigAuthMethodOtpUpdateInput {
+  email: ConfigAuthMethodOtpEmailUpdateInput
+}
+
+input ConfigAuthMethodSmsPasswordlessUpdateInput {
+  enabled: Boolean
+}
+
+input ConfigAuthMethodUpdateInput {
+  anonymous: ConfigAuthMethodAnonymousUpdateInput
+  emailPassword: ConfigAuthMethodEmailPasswordUpdateInput
+  emailPasswordless: ConfigAuthMethodEmailPasswordlessUpdateInput
+  oauth: ConfigAuthMethodOauthUpdateInput
+  otp: ConfigAuthMethodOtpUpdateInput
+  smsPasswordless: ConfigAuthMethodSmsPasswordlessUpdateInput
+  webauthn: ConfigAuthMethodWebauthnUpdateInput
+}
+
+input ConfigAuthMethodWebauthnAttestationUpdateInput {
+  timeout: ConfigUint32
+}
+
+input ConfigAuthMethodWebauthnRelyingPartyUpdateInput {
+  id: String
+  name: String
+  origins: [ConfigUrl!]
+}
+
+input ConfigAuthMethodWebauthnUpdateInput {
+  attestation: ConfigAuthMethodWebauthnAttestationUpdateInput
+  enabled: Boolean
+  relyingParty: ConfigAuthMethodWebauthnRelyingPartyUpdateInput
+}
+
+input ConfigAuthMiscUpdateInput {
+  concealErrors: Boolean
+}
+
+input ConfigAuthRateLimitUpdateInput {
+  bruteForce: ConfigRateLimitUpdateInput
+  emails: ConfigRateLimitUpdateInput
+  global: ConfigRateLimitUpdateInput
+  signups: ConfigRateLimitUpdateInput
+  sms: ConfigRateLimitUpdateInput
+}
+
+input ConfigAuthRedirectionsUpdateInput {
+  allowedUrls: [String!]
+  clientUrl: ConfigUrl
+}
+
+input ConfigAuthSessionAccessTokenUpdateInput {
+  customClaims: [ConfigAuthsessionaccessTokenCustomClaimsUpdateInput!]
+  expiresIn: ConfigUint32
+}
+
+input ConfigAuthSessionRefreshTokenUpdateInput {
+  expiresIn: ConfigUint32
+}
+
+input ConfigAuthSessionUpdateInput {
+  accessToken: ConfigAuthSessionAccessTokenUpdateInput
+  refreshToken: ConfigAuthSessionRefreshTokenUpdateInput
+}
+
+input ConfigAuthSignUpTurnstileUpdateInput {
+  secretKey: String
+}
+
+input ConfigAuthSignUpUpdateInput {
+  disableNewUsers: Boolean
+  enabled: Boolean
+  turnstile: ConfigAuthSignUpTurnstileUpdateInput
+}
+
+input ConfigAuthTotpUpdateInput {
+  enabled: Boolean
+  issuer: String
+}
+
+input ConfigAuthUpdateInput {
+  elevatedPrivileges: ConfigAuthElevatedPrivilegesUpdateInput
+  method: ConfigAuthMethodUpdateInput
+  misc: ConfigAuthMiscUpdateInput
+  rateLimit: ConfigAuthRateLimitUpdateInput
+  redirections: ConfigAuthRedirectionsUpdateInput
+  resources: ConfigResourcesUpdateInput
+  session: ConfigAuthSessionUpdateInput
+  signUp: ConfigAuthSignUpUpdateInput
+  totp: ConfigAuthTotpUpdateInput
+  user: ConfigAuthUserUpdateInput
+  version: String
+}
+
+input ConfigAuthUserEmailDomainsUpdateInput {
+  allowed: [String!]
+  blocked: [String!]
+}
+
+input ConfigAuthUserEmailUpdateInput {
+  allowed: [ConfigEmail!]
+  blocked: [ConfigEmail!]
+}
+
+input ConfigAuthUserGravatarUpdateInput {
+  default: String
+  enabled: Boolean
+  rating: String
+}
+
+input ConfigAuthUserLocaleUpdateInput {
+  allowed: [ConfigLocale!]
+  default: ConfigLocale
+}
+
+input ConfigAuthUserRolesUpdateInput {
+  allowed: [ConfigUserRole!]
+  default: ConfigUserRole
+}
+
+input ConfigAuthUserUpdateInput {
+  email: ConfigAuthUserEmailUpdateInput
+  emailDomains: ConfigAuthUserEmailDomainsUpdateInput
+  gravatar: ConfigAuthUserGravatarUpdateInput
+  locale: ConfigAuthUserLocaleUpdateInput
+  roles: ConfigAuthUserRolesUpdateInput
+}
+
+input ConfigAuthsessionaccessTokenCustomClaimsUpdateInput {
+  key: String
+  value: String
+}
+
+input ConfigAutoscalerUpdateInput {
+  maxReplicas: ConfigUint8
+}
+
+input ConfigClaimMapUpdateInput {
+  claim: String
+  default: String
+  path: String
+  value: String
+}
+
+input ConfigComputeResourcesUpdateInput {
+  cpu: ConfigUint32
+  memory: ConfigUint32
+}
+
+input ConfigConfigUpdateInput {
+  ai: ConfigAIUpdateInput
+  auth: ConfigAuthUpdateInput
+  functions: ConfigFunctionsUpdateInput
+  global: ConfigGlobalUpdateInput
+  graphql: ConfigGraphqlUpdateInput
+  hasura: ConfigHasuraUpdateInput
+  observability: ConfigObservabilityUpdateInput
+  postgres: ConfigPostgresUpdateInput
+  provider: ConfigProviderUpdateInput
+  storage: ConfigStorageUpdateInput
+}
+
+input ConfigFunctionsNodeUpdateInput {
+  version: Int
+}
+
+input ConfigFunctionsResourcesUpdateInput {
+  networking: ConfigNetworkingUpdateInput
+}
+
+input ConfigFunctionsUpdateInput {
+  node: ConfigFunctionsNodeUpdateInput
+  rateLimit: ConfigRateLimitUpdateInput
+  resources: ConfigFunctionsResourcesUpdateInput
+}
+
+input ConfigGlobalEnvironmentVariableUpdateInput {
+  name: String
+  value: String
+}
+
+input ConfigGlobalUpdateInput {
+  environment: [ConfigGlobalEnvironmentVariableUpdateInput!]
+}
+
+input ConfigGrafanaAlertingUpdateInput {
+  enabled: Boolean
+}
+
+input ConfigGrafanaContactsUpdateInput {
+  discord: [ConfigGrafanacontactsDiscordUpdateInput!]
+  emails: [String!]
+  pagerduty: [ConfigGrafanacontactsPagerdutyUpdateInput!]
+  slack: [ConfigGrafanacontactsSlackUpdateInput!]
+  webhook: [ConfigGrafanacontactsWebhookUpdateInput!]
+}
+
+input ConfigGrafanaSmtpUpdateInput {
+  host: String
+  password: String
+  port: ConfigPort
+  sender: String
+  user: String
+}
+
+input ConfigGrafanaUpdateInput {
+  adminPassword: String
+  alerting: ConfigGrafanaAlertingUpdateInput
+  contacts: ConfigGrafanaContactsUpdateInput
+  smtp: ConfigGrafanaSmtpUpdateInput
+}
+
+input ConfigGrafanacontactsDiscordUpdateInput {
+  avatarUrl: String
+  url: String
+}
+
+input ConfigGrafanacontactsPagerdutyUpdateInput {
+  class: String
+  component: String
+  group: String
+  integrationKey: String
+  severity: String
+}
+
+input ConfigGrafanacontactsSlackUpdateInput {
+  endpointURL: String
+  iconEmoji: String
+  iconURL: String
+  mentionChannel: String
+  mentionGroups: [String!]
+  mentionUsers: [String!]
+  recipient: String
+  token: String
+  url: String
+  username: String
+}
+
+input ConfigGrafanacontactsWebhookUpdateInput {
+  authorizationCredentials: String
+  authorizationScheme: String
+  httpMethod: String
+  maxAlerts: Int
+  password: String
+  url: String
+  username: String
+}
+
+input ConfigGraphqlSecurityUpdateInput {
+  forbidAminSecret: Boolean
+  maxDepthQueries: ConfigUint
+}
+
+input ConfigGraphqlUpdateInput {
+  security: ConfigGraphqlSecurityUpdateInput
+}
+
+input ConfigHasuraAuthHookUpdateInput {
+  mode: String
+  sendRequestBody: Boolean
+  url: String
+}
+
+input ConfigHasuraEventsUpdateInput {
+  httpPoolSize: ConfigUint32
+}
+
+input ConfigHasuraLogsUpdateInput {
+  level: String
+}
+
+input ConfigHasuraSettingsUpdateInput {
+  corsDomain: [ConfigUrl!]
+  devMode: Boolean
+  enableAllowList: Boolean
+  enableConsole: Boolean
+  enableRemoteSchemaPermissions: Boolean
+  enabledAPIs: [ConfigHasuraAPIs!]
+  inferFunctionPermissions: Boolean
+  liveQueriesMultiplexedRefetchInterval: ConfigUint32
+  stringifyNumericTypes: Boolean
+}
+
+input ConfigHasuraUpdateInput {
+  adminSecret: String
+  authHook: ConfigHasuraAuthHookUpdateInput
+  events: ConfigHasuraEventsUpdateInput
+  jwtSecrets: [ConfigJWTSecretUpdateInput!]
+  logs: ConfigHasuraLogsUpdateInput
+  rateLimit: ConfigRateLimitUpdateInput
+  resources: ConfigResourcesUpdateInput
+  settings: ConfigHasuraSettingsUpdateInput
+  version: String
+  webhookSecret: String
+}
+
+input ConfigIngressTlsUpdateInput {
+  clientCA: String
+}
+
+input ConfigIngressUpdateInput {
+  fqdn: [String!]
+  tls: ConfigIngressTlsUpdateInput
+}
+
+input ConfigJWTSecretUpdateInput {
+  allowed_skew: ConfigUint32
+  audience: String
+  claims_format: String
+  claims_map: [ConfigClaimMapUpdateInput!]
+  claims_namespace: String
+  claims_namespace_path: String
+  header: String
+  issuer: String
+  jwk_url: ConfigUrl
+  key: String
+  kid: String
+  signingKey: String
+  type: String
+}
+
+input ConfigNetworkingUpdateInput {
+  ingresses: [ConfigIngressUpdateInput!]
+}
+
+input ConfigObservabilityUpdateInput {
+  grafana: ConfigGrafanaUpdateInput
+}
+
+input ConfigPostgresPitrUpdateInput {
+  retention: ConfigUint8
+}
+
+input ConfigPostgresResourcesStorageUpdateInput {
+  capacity: ConfigUint32
+}
+
+input ConfigPostgresResourcesUpdateInput {
+  compute: ConfigResourcesComputeUpdateInput
+  enablePublicAccess: Boolean
+  replicas: Int
+  storage: ConfigPostgresResourcesStorageUpdateInput
+}
+
+input ConfigPostgresSettingsUpdateInput {
+  archiveTimeout: ConfigInt32
+  checkpointCompletionTarget: Float
+  defaultStatisticsTarget: ConfigInt32
+  effectiveCacheSize: String
+  effectiveIOConcurrency: ConfigInt32
+  hugePages: String
+  jit: String
+  maintenanceWorkMem: String
+  maxConnections: ConfigInt32
+  maxParallelMaintenanceWorkers: ConfigInt32
+  maxParallelWorkers: ConfigInt32
+  maxParallelWorkersPerGather: ConfigInt32
+  maxReplicationSlots: ConfigInt32
+  maxWalSenders: ConfigInt32
+  maxWalSize: String
+  maxWorkerProcesses: ConfigInt32
+  minWalSize: String
+  randomPageCost: Float
+  sharedBuffers: String
+  walBuffers: String
+  walLevel: String
+  workMem: String
+}
+
+input ConfigPostgresUpdateInput {
+  pitr: ConfigPostgresPitrUpdateInput
+  resources: ConfigPostgresResourcesUpdateInput
+  settings: ConfigPostgresSettingsUpdateInput
+  version: String
+}
+
+input ConfigProviderUpdateInput {
+  sms: ConfigSmsUpdateInput
+  smtp: ConfigSmtpUpdateInput
+}
+
+input ConfigRateLimitUpdateInput {
+  interval: String
+  limit: ConfigUint32
+}
+
+input ConfigResourcesComputeUpdateInput {
+  cpu: ConfigUint32
+  memory: ConfigUint32
+}
+
+input ConfigResourcesUpdateInput {
+  autoscaler: ConfigAutoscalerUpdateInput
+  compute: ConfigResourcesComputeUpdateInput
+  networking: ConfigNetworkingUpdateInput
+  replicas: ConfigUint8
+}
+
+input ConfigSmsUpdateInput {
+  accountSid: String
+  authToken: String
+  messagingServiceId: String
+  provider: String
+}
+
+input ConfigSmtpUpdateInput {
+  host: String
+  method: String
+  password: String
+  port: ConfigPort
+  secure: Boolean
+  sender: String
+  user: String
+}
+
+input ConfigStandardOauthProviderUpdateInput {
+  clientId: String
+  clientSecret: String
+  enabled: Boolean
+}
+
+input ConfigStandardOauthProviderWithScopeUpdateInput {
+  audience: String
+  clientId: String
+  clientSecret: String
+  enabled: Boolean
+  scope: [String!]
+}
+
+input ConfigStorageAntivirusUpdateInput {
+  server: String
+}
+
+input ConfigStorageUpdateInput {
+  antivirus: ConfigStorageAntivirusUpdateInput
+  rateLimit: ConfigRateLimitUpdateInput
+  resources: ConfigResourcesUpdateInput
+  version: String
+}
+
 input Int_comparison_exp {
   _eq: Int
   _gt: Int
@@ -825,5 +1357,9 @@ apps(distinct_on: [apps_select_column!], limit: Int, offset: Int, order_by: [app
 organization(id: uuid!): organizations
   """An array relationship"""
 organizations(distinct_on: [organizations_select_column!], limit: Int, offset: Int, order_by: [organizations_order_by!], where: organizations_bool_exp): [organizations!]!
+}
+
+type Mutation {
+  updateConfig(appID: uuid!, config: ConfigConfigUpdateInput!): ConfigConfig!
 }
 

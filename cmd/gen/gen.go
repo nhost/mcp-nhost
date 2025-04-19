@@ -13,6 +13,7 @@ const (
 	flagNhostAuthURL    = "nhost-auth-url"
 	flagNhostGraphqlURL = "nhost-graphql-url"
 	flagNhostPAT        = "nhost-pat"
+	flagWithMutations   = "with-mutations"
 )
 
 func Command() *cli.Command {
@@ -40,6 +41,12 @@ func Command() *cli.Command {
 				Required: true,
 				Sources:  cli.EnvVars("NHOST_PAT"),
 			},
+			&cli.BoolFlag{ //nolint:exhaustruct
+				Name:    flagWithMutations,
+				Usage:   "Include mutations in the generated schema",
+				Value:   false,
+				Sources: cli.EnvVars("WITH_MUTATIONS"),
+			},
 		},
 		Action: action,
 	}
@@ -65,39 +72,42 @@ func action(ctx context.Context, cmd *cli.Command) error {
 	); err != nil {
 		return cli.Exit(err.Error(), 1)
 	}
-
-	schema := graphql.ParseSchema(
-		introspection, graphql.Filter{
-			AllowQueries: []graphql.Queries{
-				{
-					Name:           "organizations",
-					DisableNesting: true,
-				},
-				{
-					Name:           "organization",
-					DisableNesting: true,
-				},
-				{
-					Name:           "app",
-					DisableNesting: true,
-				},
-				{
-					Name:           "apps",
-					DisableNesting: true,
-				},
-				{
-					Name:           "config",
-					DisableNesting: false,
-				},
+	filter := graphql.Filter{
+		AllowQueries: []graphql.Queries{
+			{
+				Name:           "organizations",
+				DisableNesting: true,
 			},
-			AllowMutations: []graphql.Queries{
-				{
-					Name:           "updateConfig",
-					DisableNesting: false,
-				},
+			{
+				Name:           "organization",
+				DisableNesting: true,
+			},
+			{
+				Name:           "app",
+				DisableNesting: true,
+			},
+			{
+				Name:           "apps",
+				DisableNesting: true,
+			},
+			{
+				Name:           "config",
+				DisableNesting: false,
 			},
 		},
-	)
+		AllowMutations: []graphql.Queries{},
+	}
+
+	if cmd.Bool(flagWithMutations) {
+		filter.AllowMutations = []graphql.Queries{
+			{
+				Name:           "updateConfig",
+				DisableNesting: false,
+			},
+		}
+	}
+
+	schema := graphql.ParseSchema(introspection, filter)
 
 	fmt.Print(schema) //nolint:forbidigo
 

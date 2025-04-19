@@ -85,6 +85,8 @@ In order to use mcp-nhost, you need to create a Personal Access Token (PAT) in y
 
 ### Configuring clients
 
+The examples below enable mutations against the cloud and your projects via the flags `--with-cloud-mutations` and `--with-project-mutations`. If you want to disable these, you can remove the flags from the snippets below.
+
 #### Cursor
 
 1. Go to "Cursor Settings"
@@ -95,7 +97,10 @@ In order to use mcp-nhost, you need to create a Personal Access Token (PAT) in y
 ```json
     "mcp-nhost": {
       "command": "/usr/local/bin/mcp-nhost",
-      "args": ["start"],
+      "args": [
+        "start",
+        "--with-cloud-mutations"
+      ],
       "env": {
         "NHOST_PAT": "<here-goes-your-pat>"
       }
