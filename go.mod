@@ -8,6 +8,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/urfave/cli/v3 v3.1.1
+	golang.org/x/mod v0.24.0
 )
 
 require (

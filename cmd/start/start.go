@@ -1,4 +1,4 @@
-package mcp
+package start
 
 import (
 	"context"
@@ -26,8 +26,8 @@ const (
 
 func Command() *cli.Command {
 	return &cli.Command{ //nolint:exhaustruct
-		Name:  "mcp",
-		Usage: "Starts MCP server",
+		Name:  "start",
+		Usage: "Starts the MCP server",
 		Flags: []cli.Flag{
 			&cli.StringFlag{ //nolint:exhaustruct
 				Name:    flagNhostAuthURL,
