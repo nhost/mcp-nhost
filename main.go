@@ -6,7 +6,8 @@ import (
 	"os"
 
 	"github.com/nhost/mcp-nhost/cmd/gen"
-	"github.com/nhost/mcp-nhost/cmd/mcp"
+	"github.com/nhost/mcp-nhost/cmd/start"
+	"github.com/nhost/mcp-nhost/cmd/upgrade"
 	"github.com/urfave/cli/v3"
 )
 
@@ -17,8 +18,9 @@ func main() {
 		Name:  "nhost-mcp",
 		Usage: "Nhost's Model Context Protocol (MCP) server",
 		Commands: []*cli.Command{
-			mcp.Command(),
+			start.Command(),
 			gen.Command(),
+			upgrade.Command(),
 		},
 		Version: Version,
 	}

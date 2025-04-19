@@ -73,6 +73,8 @@ jobs:
 
           mkdir upload
 
+          find ~/artifacts -type f -name "mcp-nhost" -exec bash -c 'chmod +x "$0"' {} \;
+
           tar cvzf upload/mcp-nhost-$VERSION-darwin-amd64.tar.gz -C ~/artifacts/mcp-nhost-$VERSION-darwin-amd64 mcp-nhost
           tar cvzf upload/mcp-nhost-$VERSION-darwin-arm64.tar.gz -C ~/artifacts/mcp-nhost-$VERSION-darwin-arm64 mcp-nhost
           tar cvzf upload/mcp-nhost-$VERSION-linux-amd64.tar.gz -C ~/artifacts/mcp-nhost-$VERSION-linux-amd64 mcp-nhost
