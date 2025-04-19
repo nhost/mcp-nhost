@@ -22,6 +22,8 @@ jobs:
     uses: ./.github/workflows/wf_check.yaml
     needs:
       - check-permissions
+    with:
+      GIT_REF: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
     secrets:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_PRODUCTION_CORE_ACCOUNT_ID }}
       NIX_CACHE_PUB_KEY: ${{ secrets.NIX_CACHE_PUB_KEY }}
@@ -37,6 +39,7 @@ jobs:
     needs:
       - check-permissions
     with:
+      GIT_REF: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || github.sha }}
       GOOS: ${{ matrix.GOOS }}
       GOARCH: ${{ matrix.GOARCH }}
       VERSION: ${{ github.sha }}
