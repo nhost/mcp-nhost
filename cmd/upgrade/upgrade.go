@@ -71,7 +71,9 @@ func printVersionsSince(
 	releases software.Releases,
 	curVersion string,
 ) {
-	fmt.Printf("Versions released since your current version (%s):\n\n", curVersion) //nolint:forbidigo
+	fmt.Printf( //nolint:forbidigo
+		"Versions released since your current version (%s):\n\n", curVersion,
+	)
 	for _, release := range releases {
 		if release.TagName == curVersion {
 			break
