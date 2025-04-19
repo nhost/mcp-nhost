@@ -24,7 +24,10 @@ func TestStart(t *testing.T) { //nolint:cyclop
 	cmd.Writer = buf
 
 	go func() {
-		if err := cmd.Run(context.Background(), []string{"main", "start", "--bind=:9000"}); err != nil {
+		if err := cmd.Run(
+			context.Background(),
+			[]string{"main", "start", "--bind=:9000", "--nhost-pat=asdasd"},
+		); err != nil {
 			panic(err)
 		}
 	}()

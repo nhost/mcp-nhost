@@ -49,7 +49,7 @@ func (t *Tool) Register(mcpServer *server.Server) error {
 	queryTool, err := protocol.NewTool(
 		ToolGraphqlQueryName,
 		ToolGraphqlQueryInstructions,
-		GraqhqlQueryRequest{}, //nolint:exhaustruct
+		GraphqlQueryRequest{}, //nolint:exhaustruct
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create %s tool: %w", ToolGraphqlQueryName, err)
