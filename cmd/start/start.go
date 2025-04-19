@@ -20,8 +20,15 @@ const (
 )
 
 const (
-	//nolint:lll
-	instructions = `This is an MCP server to interact with Nhost Cloud. Always start by getting the GraphQL schema using the "get-graphql-schema" tool. Apps and projects are the same in the Nhost Cloud and while users may talk about projects in the GraphQL api those are referred as apps. Always make sure the GraphQL request is correct and it has all mandatory arguments and the returned fields are correct.`
+	instructions = `
+		This is an MCP server to interact with Nhost Cloud and with projects running on it.
+
+		Before attempting to call any tool *-graphql-query, always get the schema using the
+		*-get-graphql-schema tool
+
+		Apps and projects are the same and while users may talk about projects in the GraphQL
+		api those are referred as apps.
+	`
 )
 
 func Command() *cli.Command {
