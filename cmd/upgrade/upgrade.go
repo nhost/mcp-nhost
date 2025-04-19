@@ -71,14 +71,14 @@ func printVersionsSince(
 	releases software.Releases,
 	curVersion string,
 ) {
-	fmt.Printf("Versions released since your current version (%s):", curVersion) //nolint:forbidigo
+	fmt.Printf("Versions released since your current version (%s):\n\n", curVersion) //nolint:forbidigo
 	for _, release := range releases {
 		if release.TagName == curVersion {
 			break
 		}
-		fmt.Printf("\n# %s\n\n", release.TagName) //nolint:forbidigo
-		fmt.Println(release.Body)                 //nolint:forbidigo
-		fmt.Println()                             //nolint:forbidigo
+		fmt.Printf("# %s\n\n", release.TagName) //nolint:forbidigo
+		fmt.Println(release.Body)               //nolint:forbidigo
+		fmt.Println()                           //nolint:forbidigo
 	}
 }
 
