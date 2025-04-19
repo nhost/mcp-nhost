@@ -29,6 +29,7 @@
             "go.sum"
             "nhost/auth/openapi.yaml"
             "tools/cloud/schema.graphql"
+            "tools/cloud/schema-with-mutations.graphql"
             (inDirectory "graphql/testdata")
             (inDirectory "vendor")
             isDirectory
@@ -72,11 +73,6 @@
 
           go-checks = nixops-lib.go.check {
             inherit src submodule ldflags tags buildInputs nativeBuildInputs checkDeps;
-
-            preCheck = ''
-              echo "➜ Getting access token"
-              export NHOST_ACCESS_TOKEN=$(bash ${src}/get_access_token.sh)
-            '';
           };
         };
 

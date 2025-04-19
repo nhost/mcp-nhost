@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/ThinkInAIXYZ/go-mcp/pkg"
+	"github.com/ThinkInAIXYZ/go-mcp/protocol"
 	"github.com/ThinkInAIXYZ/go-mcp/server"
 	"github.com/ThinkInAIXYZ/go-mcp/transport"
 	"github.com/nhost/mcp-nhost/nhost/auth"
@@ -13,21 +14,30 @@ import (
 )
 
 const (
-	flagNhostAuthURL    = "nhost-auth-url"
-	flagNhostGraphqlURL = "nhost-graphql-url"
-	flagNhostPAT        = "nhost-pat"
-	flagBind            = "bind"
+	flagNhostAuthURL       = "nhost-auth-url"
+	flagNhostGraphqlURL    = "nhost-graphql-url"
+	flagNhostPAT           = "nhost-pat"
+	flagBind               = "bind"
+	flagWithCloudMutations = "with-cloud-mutations"
 )
 
 const (
-	instructions = `
+	// this seems to be largely ignored by clients, or at least by cursor.
+	// we also need to look into roots and resources as those might be helpful.
+	ServerInstructions = `
 		This is an MCP server to interact with Nhost Cloud and with projects running on it.
 
-		Before attempting to call any tool *-graphql-query, always get the schema using the
-		*-get-graphql-schema tool
+		Important notes to anyone using this MCP server. Do not use this MCP server without
+		following these instructions:
 
-		Apps and projects are the same and while users may talk about projects in the GraphQL
-		api those are referred as apps.
+		1. Before attempting to call any tool *-graphql-query, always get the schema using the
+		   *-get-graphql-schema tool
+		2. Apps and projects are the same and while users may talk about projects in the GraphQL
+		  api those are referred as apps.
+		3. IDs are always UUIDs so if you have anything else (like an app/project name) you may need
+		   to first get the ID using the *-graphql-query tool.
+		4. If you have an error querying the GraphQL API, please check the schema again. The schema may
+		   have changed and the query you are using may be invalid.
 	`
 )
 
@@ -61,6 +71,12 @@ func Command() *cli.Command {
 				Usage:    "Bind address in the form <host>:<port>. If omitted use stdio",
 				Required: false,
 				Sources:  cli.EnvVars("BIND"),
+			},
+			&cli.BoolFlag{ //nolint:exhaustruct
+				Name:    flagWithCloudMutations,
+				Usage:   "Enable mutations against Nhost Cloud to allow operating on projects",
+				Value:   false,
+				Sources: cli.EnvVars("WITH_CLOUD_MUTATIONS"),
 			},
 		},
 		Action: action,
@@ -96,8 +112,14 @@ func action(_ context.Context, cmd *cli.Command) error {
 
 	mcpServer, err := server.NewServer(
 		transportServer,
+		server.WithServerInfo(
+			protocol.Implementation{
+				Name:    cmd.Root().Name,
+				Version: cmd.Root().Version,
+			},
+		),
 		server.WithLogger(logger),
-		server.WithInstructions(instructions),
+		server.WithInstructions(ServerInstructions),
 	)
 	if err != nil {
 		return cli.Exit(fmt.Sprintf("failed to create mcp server: %v", err), 1)
@@ -111,7 +133,9 @@ func action(_ context.Context, cmd *cli.Command) error {
 		return cli.Exit(err.Error(), 1)
 	}
 
-	cloudTool := cloud.NewTool(cmd.String(flagNhostGraphqlURL), interceptor)
+	cloudTool := cloud.NewTool(
+		cmd.String(flagNhostGraphqlURL), cmd.Bool(flagWithCloudMutations), interceptor,
+	)
 
 	if err := cloudTool.Register(mcpServer); err != nil {
 		return cli.Exit(fmt.Sprintf("failed to register Nhost's cloud tools: %v", err), 1)

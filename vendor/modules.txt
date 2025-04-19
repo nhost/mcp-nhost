@@ -1,5 +1,6 @@
 # github.com/ThinkInAIXYZ/go-mcp v0.1.13
 ## explicit; go 1.18
+github.com/ThinkInAIXYZ/go-mcp/client
 github.com/ThinkInAIXYZ/go-mcp/pkg
 github.com/ThinkInAIXYZ/go-mcp/protocol
 github.com/ThinkInAIXYZ/go-mcp/server
@@ -26,6 +27,7 @@ github.com/golang-jwt/jwt/v5
 # github.com/google/go-cmp v0.5.9
 ## explicit; go 1.13
 github.com/google/go-cmp/cmp
+github.com/google/go-cmp/cmp/cmpopts
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function

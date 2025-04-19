@@ -71,7 +71,9 @@ func printVersionsSince(
 	releases software.Releases,
 	curVersion string,
 ) {
-	fmt.Printf("Versions released since your current version (%s):\n\n", curVersion) //nolint:forbidigo
+	fmt.Printf( //nolint:forbidigo
+		"Versions released since your current version (%s):\n\n", curVersion,
+	)
 	for _, release := range releases {
 		if release.TagName == curVersion {
 			break
@@ -120,7 +122,7 @@ func install(
 
 	curBin, err := os.Executable()
 	if err != nil {
-		return fmt.Errorf("failed to find installed CLI: %w", err)
+		return fmt.Errorf("failed to find installed mcp-nhost: %w", err)
 	}
 
 	if curVersion == devVersion || curVersion == "" {

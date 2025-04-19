@@ -13,40 +13,46 @@ import (
 //go:embed schema.graphql
 var schemaGraphql string
 
+//go:embed schema-with-mutations.graphql
+var schemaGraphqlWithMutations string
+
 type Tool struct {
-	graphqlURL   string
-	interceptors []func(ctx context.Context, req *http.Request) error
+	graphqlURL    string
+	withMutations bool
+	interceptors  []func(ctx context.Context, req *http.Request) error
 }
 
 func NewTool(
 	graphqlURL string,
+	withMutations bool,
 	interceptors ...func(ctx context.Context, req *http.Request) error,
 ) *Tool {
 	return &Tool{
-		graphqlURL:   graphqlURL,
-		interceptors: interceptors,
+		graphqlURL:    graphqlURL,
+		withMutations: withMutations,
+		interceptors:  interceptors,
 	}
 }
 
 func (t *Tool) Register(mcpServer *server.Server) error {
 	schemaTool, err := protocol.NewTool(
-		toolGetGraphqlSchemaName,
-		toolGetGraphqlSchemaInstructions,
+		ToolGetGraphqlSchemaName,
+		ToolGetGraphqlSchemaInstructions,
 		GetGraphqlSchemaRequest{},
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create %s tool: %w", toolGetGraphqlSchemaName, err)
+		return fmt.Errorf("failed to create %s tool: %w", ToolGetGraphqlSchemaName, err)
 	}
 
 	mcpServer.RegisterTool(schemaTool, t.handleGetGraphqlSchema)
 
 	queryTool, err := protocol.NewTool(
-		toolGraphqlQueryName,
-		toolGraphqlQueryInstructions,
-		GraqhqlQueryRequest{}, //nolint:exhaustruct
+		ToolGraphqlQueryName,
+		ToolGraphqlQueryInstructions,
+		GraphqlQueryRequest{}, //nolint:exhaustruct
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create %s tool: %w", toolGraphqlQueryName, err)
+		return fmt.Errorf("failed to create %s tool: %w", ToolGraphqlQueryName, err)
 	}
 
 	mcpServer.RegisterTool(queryTool, t.handleGraphqlQuery)
