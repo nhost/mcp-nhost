@@ -10,6 +10,7 @@ import (
 	"github.com/ThinkInAIXYZ/go-mcp/transport"
 	"github.com/nhost/mcp-nhost/nhost/auth"
 	"github.com/nhost/mcp-nhost/tools/cloud"
+	"github.com/nhost/mcp-nhost/tools/local"
 	"github.com/urfave/cli/v3"
 )
 
@@ -19,24 +20,28 @@ const (
 	flagNhostPAT           = "nhost-pat"
 	flagBind               = "bind"
 	flagWithCloudMutations = "with-cloud-mutations"
+	flagLocalAdminSecret   = "local-admin-secret" //nolint:gosec
+	flagLocalGraphqlURL    = "local-graphql-url"
 )
 
 const (
 	// this seems to be largely ignored by clients, or at least by cursor.
 	// we also need to look into roots and resources as those might be helpful.
 	ServerInstructions = `
-		This is an MCP server to interact with Nhost Cloud and with projects running on it.
+		This is an MCP server to interact with Nhost Cloud and with projects running on it and
+		also with Nhost local development projects.
 
 		Important notes to anyone using this MCP server. Do not use this MCP server without
 		following these instructions:
 
-		1. Before attempting to call any tool *-graphql-query, always get the schema using the
+		1. Make sure you are clear on which environment the user wants to operate against.
+		2. Before attempting to call any tool *-graphql-query, always get the schema using the
 		   *-get-graphql-schema tool
-		2. Apps and projects are the same and while users may talk about projects in the GraphQL
+		3. Apps and projects are the same and while users may talk about projects in the GraphQL
 		  api those are referred as apps.
-		3. IDs are always UUIDs so if you have anything else (like an app/project name) you may need
+		4. IDs are always UUIDs so if you have anything else (like an app/project name) you may need
 		   to first get the ID using the *-graphql-query tool.
-		4. If you have an error querying the GraphQL API, please check the schema again. The schema may
+		5. If you have an error querying the GraphQL API, please check the schema again. The schema may
 		   have changed and the query you are using may be invalid.
 	`
 )
@@ -47,36 +52,57 @@ func Command() *cli.Command {
 		Usage: "Starts the MCP server",
 		Flags: []cli.Flag{
 			&cli.StringFlag{ //nolint:exhaustruct
-				Name:    flagNhostAuthURL,
-				Usage:   "Nhost auth URL",
-				Hidden:  true,
-				Value:   "https://otsispdzcwxyqzbfntmj.auth.eu-central-1.nhost.run/v1",
-				Sources: cli.EnvVars("NHOST_AUTH_URL"),
+				Name:     flagNhostAuthURL,
+				Usage:    "Nhost auth URL",
+				Hidden:   true,
+				Value:    "https://otsispdzcwxyqzbfntmj.auth.eu-central-1.nhost.run/v1",
+				Category: "Cloud Platform",
+				Sources:  cli.EnvVars("NHOST_AUTH_URL"),
 			},
 			&cli.StringFlag{ //nolint:exhaustruct
-				Name:    flagNhostGraphqlURL,
-				Usage:   "Nhost GraphQL URL",
-				Hidden:  true,
-				Value:   "https://otsispdzcwxyqzbfntmj.graphql.eu-central-1.nhost.run/v1",
-				Sources: cli.EnvVars("NHOST_GRAPHQL_URL"),
+				Name:     flagNhostGraphqlURL,
+				Usage:    "Nhost GraphQL URL",
+				Hidden:   true,
+				Value:    "https://otsispdzcwxyqzbfntmj.graphql.eu-central-1.nhost.run/v1",
+				Category: "Cloud Platform",
+				Sources:  cli.EnvVars("NHOST_GRAPHQL_URL"),
 			},
 			&cli.StringFlag{ //nolint:exhaustruct
 				Name:     flagNhostPAT,
 				Usage:    "Personal Access Token",
 				Required: true,
+				Category: "Cloud Platform",
 				Sources:  cli.EnvVars("NHOST_PAT"),
 			},
 			&cli.StringFlag{ //nolint:exhaustruct
 				Name:     flagBind,
 				Usage:    "Bind address in the form <host>:<port>. If omitted use stdio",
 				Required: false,
+				Category: "General",
 				Sources:  cli.EnvVars("BIND"),
 			},
 			&cli.BoolFlag{ //nolint:exhaustruct
-				Name:    flagWithCloudMutations,
-				Usage:   "Enable mutations against Nhost Cloud to allow operating on projects",
-				Value:   false,
-				Sources: cli.EnvVars("WITH_CLOUD_MUTATIONS"),
+				Name:     flagWithCloudMutations,
+				Usage:    "Enable mutations against Nhost Cloud to allow operating on projects",
+				Value:    false,
+				Category: "Cloud Platform",
+				Sources:  cli.EnvVars("WITH_CLOUD_MUTATIONS"),
+			},
+			&cli.StringFlag{ //nolint:exhaustruct
+				Name:     flagLocalAdminSecret,
+				Usage:    "Admin secret for local projects",
+				Required: false,
+				Value:    "nhost-admin-secret",
+				Category: "Local Development",
+				Sources:  cli.EnvVars("LOCAL_ADMIN_SECRET"),
+			},
+			&cli.StringFlag{ //nolint:exhaustruct
+				Name:     flagLocalGraphqlURL,
+				Usage:    "GraphQL URL for local projects",
+				Required: false,
+				Value:    "https://local.graphql.local.nhost.run/v1",
+				Category: "Local Development",
+				Sources:  cli.EnvVars("LOCAL_GRAPHQL_URL"),
 			},
 		},
 		Action: action,
@@ -139,6 +165,14 @@ func action(_ context.Context, cmd *cli.Command) error {
 
 	if err := cloudTool.Register(mcpServer); err != nil {
 		return cli.Exit(fmt.Sprintf("failed to register Nhost's cloud tools: %v", err), 1)
+	}
+
+	localTool := local.NewTool(
+		cmd.String(flagLocalGraphqlURL),
+		auth.WithAdminSecret(cmd.String(flagLocalAdminSecret)),
+	)
+	if err := localTool.Register(mcpServer); err != nil {
+		return cli.Exit(fmt.Sprintf("failed to register local tools: %v", err), 1)
 	}
 
 	logger.Infof("starting mcp server")

@@ -52,3 +52,21 @@ func WithPAT(
 		return nil
 	}, nil
 }
+
+func WithAdminSecret(
+	adminSecret string,
+) func(ctx context.Context, req *http.Request) error {
+	return func(_ context.Context, req *http.Request) error {
+		req.Header.Add("X-Hasura-Admin-Secret", adminSecret)
+		return nil
+	}
+}
+
+func WithRole(
+	role string,
+) func(ctx context.Context, req *http.Request) error {
+	return func(_ context.Context, req *http.Request) error {
+		req.Header.Add("X-Hasura-Role", role)
+		return nil
+	}
+}

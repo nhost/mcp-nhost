@@ -33,23 +33,16 @@ The following tools are currently exposed through the MCP interface:
    - Perform operations on projects and organizations
    - Manage configurations and settings
 
-## Roadmap
+3. **Local Project's GraphQL Schema Access**
+   - Retrieve the complete GraphQL schema for local Nhost projects
+   - Access type definitions and available operations
 
-### Phase 1: Cloud Integration (Current)
-- ✅ Basic project and organization management
-- ✅ Configuration management
+4. **Local Project's GraphQL Query Execution**
+   - Execute queries against local Nhost projects
 
-### Phase 2: CLI Integration (Coming Soon)
-- 🔄 Local project management
-- 🔄 Development environment configuration
+## Screenshots and Examples
 
-### Phase 3: Development Workflows (Planned)
-- 🔄 Manage migrations
-- 🔄 Manage permissions
-- 🔄 Schema-awareness for developmenet workflows
-
-### Phase 4: Production integration (Planned)
-- 🔄 Integration with production projects via Graphite for building agents effortlessly
+You can find screenshots and examples of the current features and tools in the [screenshots](docs/screenshots.md) file.
 
 
 ## Installing
@@ -106,6 +99,20 @@ The examples below enable mutations against the cloud and your projects via the 
       }
     }
 ```
+
+## Roadmap
+
+- ✅ Cloud platform: Basic project and organization management
+- ✅ Cloud projects: Configuration management
+- 🔄 Local projects: Configuration management
+- ✅ Local projects: Graphql Schema awareness and query execution
+- 🔄 Local projects: Auth and Storage schema awareness
+- 🔄 Cloud projects: Schema awareness and query execution
+- 🔄 Cloud projects: Auth and Storage schema awareness
+- 🔄 Local projects: Create migrations
+- 🔄 Local projects: Manage permissions
+
+If you have any suggestions or feature requests, please feel free to open an issue for discussion.
 
 ## Contributing
 
