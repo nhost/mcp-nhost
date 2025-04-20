@@ -21,7 +21,7 @@ type GraphqlQueryRequest struct {
 	Query     string `description:"graphql query to perform"      json:"query"     required:"true"`
 	Variables string `description:"variables to use in the query" json:"variables" required:"false"`
 
-	Role string `description:"role to use when executing queries. Default to user but make sure the user is aware. Keep in mind the schema depends on the role so if you retrieved the schema for a different role previously retrieve it for this role beforhand as it might differ" json:"role" required:"true"`
+	Role string `description:"role to use when executing queries. Default to user but make sure the user is aware. Keep in mind the schema depends on the role so if you retrieved the schema for a different role previously retrieve it for this role beforehand as it might differ" json:"role" required:"true"`
 }
 
 func (t *Tool) handleGraphqlQuery(req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
