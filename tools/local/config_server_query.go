@@ -7,25 +7,21 @@ import (
 
 	"github.com/ThinkInAIXYZ/go-mcp/protocol"
 	"github.com/nhost/mcp-nhost/graphql"
-	"github.com/nhost/mcp-nhost/nhost/auth"
 )
 
 const (
-	ToolGraphqlQueryName = "local-graphql-query"
+	ToolConfigServerQueryName = "local-config-server-query"
 	//nolint:lll
-	ToolGraphqlQueryInstructions = `Execute a GraphQL query against an Nhost development project running locally via the Nhost CLI. This tool is useful to test queries and mutations during development. If you run into issues executing queries, retrieve the schema using the local-get-graphql-schema tool in case the schema has changed.`
+	ToolConfigServerQueryInstructions = `Execute a GraphQL query against the local config server. This tool is useful to query and perform configuration changes on the local development project. Before using this tool, make sure to get the schema using the local-config-server-schema tool. To perform configuration changes this endpoint is all you need but to apply them you need to run 'nhost up' again. Ask the user for input when you need information about settings, for instance if the user asks to enable some oauth2 method and you need the client id or secret.`
 )
 
-//nolint:lll
-type GraphqlQueryRequest struct {
+type ConfigServerQueryRequest struct {
 	Query     string `description:"graphql query to perform"      json:"query"     required:"true"`
 	Variables string `description:"variables to use in the query" json:"variables" required:"false"`
-
-	Role string `description:"role to use when executing queries. Default to user but make sure the user is aware. Keep in mind the schema depends on the role so if you retrieved the schema for a different role previously retrieve it for this role beforhand as it might differ" json:"role" required:"true"`
 }
 
-func (t *Tool) handleGraphqlQuery(req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
-	var graphReq GraphqlQueryRequest
+func (t *Tool) handleConfigServerQuery(req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
+	var graphReq ConfigServerQueryRequest
 	if err := protocol.VerifyAndUnmarshal(req.RawArguments, &graphReq); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal request: %w", err)
 	}
@@ -37,19 +33,14 @@ func (t *Tool) handleGraphqlQuery(req *protocol.CallToolRequest) (*protocol.Call
 		}
 	}
 
-	interceptors := append( //nolint:gocritic
-		t.interceptors,
-		auth.WithRole(graphReq.Role),
-	)
-
 	var resp graphql.Response[any]
 	if err := graphql.Query(
 		context.Background(),
-		t.graphqlURL,
+		t.configServerURL,
 		graphReq.Query,
 		variables,
 		&resp,
-		interceptors...,
+		t.interceptors...,
 	); err != nil {
 		return nil, fmt.Errorf("failed to query graphql endpoint: %w", err)
 	}

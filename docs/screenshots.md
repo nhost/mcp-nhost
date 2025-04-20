@@ -23,3 +23,11 @@ Generating code from local project's schema:
 Resulting code:
 
 ![resulting code](screenshots/203-result.png)
+
+Querying local project's configuration:
+
+![querying local project's configuration](screenshots/204-local-config-query.png)
+
+Modifying local project's configuration:
+
+![modifying local project's configuration](screenshots/205-local-config-change.png)

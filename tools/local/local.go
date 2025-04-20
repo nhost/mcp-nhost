@@ -10,17 +10,20 @@ import (
 )
 
 type Tool struct {
-	graphqlURL   string
-	interceptors []func(ctx context.Context, req *http.Request) error
+	graphqlURL      string
+	configServerURL string
+	interceptors    []func(ctx context.Context, req *http.Request) error
 }
 
 func NewTool(
 	graphqlURL string,
+	configServerURL string,
 	interceptors ...func(ctx context.Context, req *http.Request) error,
 ) *Tool {
 	return &Tool{
-		graphqlURL:   graphqlURL,
-		interceptors: interceptors,
+		graphqlURL:      graphqlURL,
+		configServerURL: configServerURL,
+		interceptors:    interceptors,
 	}
 }
 
@@ -46,6 +49,28 @@ func (t *Tool) Register(mcpServer *server.Server) error {
 	}
 
 	mcpServer.RegisterTool(queryTool, t.handleGraphqlQuery)
+
+	configServerSchemaTool, err := protocol.NewTool(
+		ToolConfigServerSchemaName,
+		ToolConfigServerSchemaInstructions,
+		ConfigServerSchemaRequest{},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create %s tool: %w", ToolConfigServerSchemaName, err)
+	}
+
+	mcpServer.RegisterTool(configServerSchemaTool, t.handleConfigServerSchema)
+
+	configServerQueryTool, err := protocol.NewTool(
+		ToolConfigServerQueryName,
+		ToolConfigServerQueryInstructions,
+		ConfigServerQueryRequest{}, //nolint:exhaustruct
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create %s tool: %w", ToolConfigServerQueryName, err)
+	}
+
+	mcpServer.RegisterTool(configServerQueryTool, t.handleConfigServerQuery)
 
 	return nil
 }

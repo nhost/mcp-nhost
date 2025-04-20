@@ -15,13 +15,14 @@ import (
 )
 
 const (
-	flagNhostAuthURL       = "nhost-auth-url"
-	flagNhostGraphqlURL    = "nhost-graphql-url"
-	flagNhostPAT           = "nhost-pat"
-	flagBind               = "bind"
-	flagWithCloudMutations = "with-cloud-mutations"
-	flagLocalAdminSecret   = "local-admin-secret" //nolint:gosec
-	flagLocalGraphqlURL    = "local-graphql-url"
+	flagNhostAuthURL         = "nhost-auth-url"
+	flagNhostGraphqlURL      = "nhost-graphql-url"
+	flagNhostPAT             = "nhost-pat"
+	flagBind                 = "bind"
+	flagWithCloudMutations   = "with-cloud-mutations"
+	flagLocalAdminSecret     = "local-admin-secret" //nolint:gosec
+	flagLocalGraphqlURL      = "local-graphql-url"
+	flagLocalConfigServerURL = "local-config-server-url"
 )
 
 const (
@@ -104,6 +105,14 @@ func Command() *cli.Command {
 				Category: "Local Development",
 				Sources:  cli.EnvVars("LOCAL_GRAPHQL_URL"),
 			},
+			&cli.StringFlag{ //nolint:exhaustruct
+				Name:     flagLocalConfigServerURL,
+				Usage:    "Config server URL for local projects",
+				Required: false,
+				Value:    "https://local.dashboard.local.nhost.run/v1/configserver/graphql",
+				Category: "Local Development",
+				Sources:  cli.EnvVars("LOCAL_CONFIG_SERVER_URL"),
+			},
 		},
 		Action: action,
 	}
@@ -169,6 +178,7 @@ func action(_ context.Context, cmd *cli.Command) error {
 
 	localTool := local.NewTool(
 		cmd.String(flagLocalGraphqlURL),
+		cmd.String(flagLocalConfigServerURL),
 		auth.WithAdminSecret(cmd.String(flagLocalAdminSecret)),
 	)
 	if err := localTool.Register(mcpServer); err != nil {
