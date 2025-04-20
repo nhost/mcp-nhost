@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/nhost/mcp-nhost/cmd/start"
 	"github.com/nhost/mcp-nhost/tools/cloud"
+	"github.com/nhost/mcp-nhost/tools/local"
 )
 
 func TestStart(t *testing.T) { //nolint:cyclop
@@ -113,6 +114,67 @@ func TestStart(t *testing.T) { //nolint:cyclop
 							},
 						},
 						Required: []string{"query"},
+					},
+				},
+				{
+					Name:        "local-config-server-query",
+					Description: local.ToolConfigServerQueryInstructions,
+					InputSchema: protocol.InputSchema{
+						Type: "object",
+						Properties: map[string]*protocol.Property{
+							"query": {
+								Type:        "string",
+								Description: "graphql query to perform",
+							},
+							"variables": {
+								Type:        "string",
+								Description: "variables to use in the query",
+							},
+						},
+						Required: []string{"query"},
+					},
+				},
+				{
+					Name:        "local-config-server-schema",
+					Description: local.ToolConfigServerSchemaInstructions,
+					InputSchema: protocol.InputSchema{ //nolint:exhaustruct
+						Type: "object",
+					},
+				},
+				{
+					Name:        "local-get-graphql-schema",
+					Description: local.ToolGetGraphqlSchemaInstructions,
+					InputSchema: protocol.InputSchema{
+						Type: "object",
+						Properties: map[string]*protocol.Property{
+							"role": {
+								Type:        "string",
+								Description: "role to use when executing queries. Default to user but make sure the user is aware",
+							},
+						},
+						Required: []string{"role"},
+					},
+				},
+				{
+					Name:        "local-graphql-query",
+					Description: local.ToolGraphqlQueryInstructions,
+					InputSchema: protocol.InputSchema{
+						Type: "object",
+						Properties: map[string]*protocol.Property{
+							"query": {
+								Type:        "string",
+								Description: "graphql query to perform",
+							},
+							"role": {
+								Type:        "string",
+								Description: "role to use when executing queries. Default to user but make sure the user is aware. Keep in mind the schema depends on the role so if you retrieved the schema for a different role previously retrieve it for this role beforehand as it might differ", //nolint:lll
+							},
+							"variables": {
+								Type:        "string",
+								Description: "variables to use in the query",
+							},
+						},
+						Required: []string{"query", "role"},
 					},
 				},
 			},
