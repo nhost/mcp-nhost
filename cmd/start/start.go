@@ -129,7 +129,7 @@ func getLogger(debug bool) pkg.Logger { //nolint:ireturn
 	return logger
 }
 
-func action(_ context.Context, cmd *cli.Command) error {
+func action(_ context.Context, cmd *cli.Command) error { //nolint:funlen
 	logger := getLogger(cmd.Bool("debug"))
 
 	var transportServer transport.ServerTransport

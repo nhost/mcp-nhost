@@ -16,7 +16,9 @@ const (
 
 type ConfigServerSchemaRequest struct{}
 
-func (t *Tool) handleConfigServerSchema(_ *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
+func (t *Tool) handleConfigServerSchema(
+	_ *protocol.CallToolRequest,
+) (*protocol.CallToolResult, error) {
 	var introspection graphql.ResponseIntrospection
 	if err := graphql.Query(
 		context.Background(),

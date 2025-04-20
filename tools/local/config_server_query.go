@@ -20,7 +20,9 @@ type ConfigServerQueryRequest struct {
 	Variables string `description:"variables to use in the query" json:"variables" required:"false"`
 }
 
-func (t *Tool) handleConfigServerQuery(req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
+func (t *Tool) handleConfigServerQuery(
+	req *protocol.CallToolRequest,
+) (*protocol.CallToolResult, error) {
 	var graphReq ConfigServerQueryRequest
 	if err := protocol.VerifyAndUnmarshal(req.RawArguments, &graphReq); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal request: %w", err)
