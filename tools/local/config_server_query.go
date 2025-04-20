@@ -1,35 +1,31 @@
-package cloud
+package local
 
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/ThinkInAIXYZ/go-mcp/protocol"
 	"github.com/nhost/mcp-nhost/graphql"
 )
 
 const (
-	ToolGraphqlQueryName = "cloud-graphql-query"
+	ToolConfigServerQueryName = "local-config-server-query"
 	//nolint:lll
-	ToolGraphqlQueryInstructions = `Execute a GraphQL query against the Nhost Cloud to perform operations on projects and organizations. It also allows configuring projects hosted on Nhost Cloud. Make sure you got the schema before attempting to execute any query. If you get an error while performing a query refresh the schema in case something has changed or you did something wrong. If you get an error indicating mutations are not allowed the user may have disabled them in the server, don't retry and ask the user they need to pass --with-cloud-mutations when starting mcp-nhost to enable them. Projects are apps.`
+	ToolConfigServerQueryInstructions = `Execute a GraphQL query against the local config server. This tool is useful to query and perform configuration changes on the local development project. Before using this tool, make sure to get the schema using the local-config-server-schema tool. To perform configuration changes this endpoint is all you need but to apply them you need to run 'nhost up' again. Ask the user for input when you need information about settings, for instance if the user asks to enable some oauth2 method and you need the client id or secret.`
 )
 
-type GraphqlQueryRequest struct {
+type ConfigServerQueryRequest struct {
 	Query     string `description:"graphql query to perform"      json:"query"     required:"true"`
 	Variables string `description:"variables to use in the query" json:"variables" required:"false"`
 }
 
-func (t *Tool) handleGraphqlQuery(req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
-	var graphReq GraphqlQueryRequest
+func (t *Tool) handleConfigServerQuery(
+	req *protocol.CallToolRequest,
+) (*protocol.CallToolResult, error) {
+	var graphReq ConfigServerQueryRequest
 	if err := protocol.VerifyAndUnmarshal(req.RawArguments, &graphReq); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal request: %w", err)
-	}
-
-	if !t.withMutations && strings.Contains(graphReq.Query, "mutation") {
-		return nil, errors.New("mutations are currently not allowed in this tool") //nolint:err113
 	}
 
 	var variables map[string]any
@@ -42,7 +38,7 @@ func (t *Tool) handleGraphqlQuery(req *protocol.CallToolRequest) (*protocol.Call
 	var resp graphql.Response[any]
 	if err := graphql.Query(
 		context.Background(),
-		t.graphqlURL,
+		t.configServerURL,
 		graphReq.Query,
 		variables,
 		&resp,

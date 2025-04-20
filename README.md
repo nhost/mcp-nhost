@@ -1,55 +1,37 @@
 # mcp-nhost
 
-A Model Control Protocol (MCP) server implementation for interacting with Nhost Cloud services. This project provides a standardized interface for managing and interacting with Nhost projects, both in the cloud and locally.
+A Model Context Protocol (MCP) server implementation for interacting with Nhost Cloud projects and services.
 
 ## Overview
 
-MCP-Nhost is designed to provide a unified interface for managing Nhost projects through the Model Control Protocol. It enables seamless interaction with Nhost Cloud services, offering a robust set of tools for project management and configuration.
-
-## Current Features
-
-### Nhost Cloud
-
-#### Project Management
-- Query and manage Nhost projects
-- Manage project resources and settings
-
-### Organization Management
-- Query organizations
-
-#### Configuration Management
-- Access and modify project configurations
+MCP-Nhost is designed to provide a unified interface for managing Nhost projects through the Model Context Protocol. It enables seamless interaction with Nhost Cloud services, offering a robust set of tools for project management and configuration.
 
 ## Available Tools
 
 The following tools are currently exposed through the MCP interface:
 
-1. **Nhost GraphQL Schema Access**
-   - Retrieve the complete GraphQL schema for Nhost Cloud
-   - Access type definitions and available operations
+1. **cloud_get_graphql_schema**
+   - Provides the GraphQL schema for the Nhost Cloud
+   - Provides information about queries, mutations, and type definitions
 
-2. **Nhost GraphQL Query Execution**
-   - Execute queries against Nhost Cloud
-   - Perform operations on projects and organizations
-   - Manage configurations and settings
+2. **cloud_graphql_query**
+   - Executes GraphQL queries and mutations against the Nhost Cloud
+   - Enables project and organization management
+   - Allows querying and updating project's configuration
 
-## Roadmap
+3. **local_get_graphql_schema**
+   - Retrieves the GraphQL schema for local Nhost development projects
+   - Provides access to project-specific queries and mutations
+   - Helps understand available operations for local development helping generating code
 
-### Phase 1: Cloud Integration (Current)
-- ✅ Basic project and organization management
-- ✅ Configuration management
+4. **local_graphql_query**
+   - Executes GraphQL queries against local Nhost development projects
+   - Enables testing and development of project-specific operations
+   - Supports both queries and mutations for local development
 
-### Phase 2: CLI Integration (Coming Soon)
-- 🔄 Local project management
-- 🔄 Development environment configuration
+## Screenshots and Examples
 
-### Phase 3: Development Workflows (Planned)
-- 🔄 Manage migrations
-- 🔄 Manage permissions
-- 🔄 Schema-awareness for developmenet workflows
-
-### Phase 4: Production integration (Planned)
-- 🔄 Integration with production projects via Graphite for building agents effortlessly
+You can find screenshots and examples of the current features and tools in the [screenshots](docs/screenshots.md) file.
 
 
 ## Installing
@@ -106,6 +88,21 @@ The examples below enable mutations against the cloud and your projects via the 
       }
     }
 ```
+
+## Roadmap
+
+- ✅ Cloud platform: Basic project and organization management
+- ✅ Cloud projects: Configuration management
+- ✅ Local projects: Configuration management
+- ✅ Local projects: Graphql Schema awareness and query execution
+- 🔄 Local projects: Auth and Storage schema awareness
+- 🔄 Cloud projects: Schema awareness and query execution
+- 🔄 Cloud projects: Auth and Storage schema awareness
+- 🔄 Local projects: Create migrations
+- 🔄 Local projects: Manage permissions
+- 🔄 Documentation: integrate or document use of mintlify's generated mcp server
+
+If you have any suggestions or feature requests, please feel free to open an issue for discussion.
 
 ## Contributing
 
