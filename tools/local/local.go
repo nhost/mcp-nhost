@@ -2,11 +2,9 @@ package local
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
-	"github.com/ThinkInAIXYZ/go-mcp/protocol"
-	"github.com/ThinkInAIXYZ/go-mcp/server"
+	"github.com/mark3labs/mcp-go/server"
 )
 
 type Tool struct {
@@ -27,50 +25,11 @@ func NewTool(
 	}
 }
 
-func (t *Tool) Register(mcpServer *server.Server) error {
-	schemaTool, err := protocol.NewTool(
-		ToolGetGraphqlSchemaName,
-		ToolGetGraphqlSchemaInstructions,
-		GetGraphqlSchemaRequest{}, //nolint:exhaustruct
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create %s tool: %w", ToolGetGraphqlSchemaName, err)
-	}
-
-	mcpServer.RegisterTool(schemaTool, t.handleGetGraphqlSchema)
-
-	queryTool, err := protocol.NewTool(
-		ToolGraphqlQueryName,
-		ToolGraphqlQueryInstructions,
-		GraphqlQueryRequest{}, //nolint:exhaustruct
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create %s tool: %w", ToolGraphqlQueryName, err)
-	}
-
-	mcpServer.RegisterTool(queryTool, t.handleGraphqlQuery)
-
-	configServerSchemaTool, err := protocol.NewTool(
-		ToolConfigServerSchemaName,
-		ToolConfigServerSchemaInstructions,
-		ConfigServerSchemaRequest{},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create %s tool: %w", ToolConfigServerSchemaName, err)
-	}
-
-	mcpServer.RegisterTool(configServerSchemaTool, t.handleConfigServerSchema)
-
-	configServerQueryTool, err := protocol.NewTool(
-		ToolConfigServerQueryName,
-		ToolConfigServerQueryInstructions,
-		ConfigServerQueryRequest{}, //nolint:exhaustruct
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create %s tool: %w", ToolConfigServerQueryName, err)
-	}
-
-	mcpServer.RegisterTool(configServerQueryTool, t.handleConfigServerQuery)
+func (t *Tool) Register(mcpServer *server.MCPServer) error {
+	t.registerGetGraphqlSchema(mcpServer)
+	t.registerGraphqlQuery(mcpServer)
+	t.registerGetConfigServerSchema(mcpServer)
+	t.registerConfigServerQuery(mcpServer)
 
 	return nil
 }

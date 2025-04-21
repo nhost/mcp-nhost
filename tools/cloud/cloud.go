@@ -3,11 +3,9 @@ package cloud
 import (
 	"context"
 	_ "embed"
-	"fmt"
 	"net/http"
 
-	"github.com/ThinkInAIXYZ/go-mcp/protocol"
-	"github.com/ThinkInAIXYZ/go-mcp/server"
+	"github.com/mark3labs/mcp-go/server"
 )
 
 //go:embed schema.graphql
@@ -34,28 +32,9 @@ func NewTool(
 	}
 }
 
-func (t *Tool) Register(mcpServer *server.Server) error {
-	schemaTool, err := protocol.NewTool(
-		ToolGetGraphqlSchemaName,
-		ToolGetGraphqlSchemaInstructions,
-		GetGraphqlSchemaRequest{},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create %s tool: %w", ToolGetGraphqlSchemaName, err)
-	}
-
-	mcpServer.RegisterTool(schemaTool, t.handleGetGraphqlSchema)
-
-	queryTool, err := protocol.NewTool(
-		ToolGraphqlQueryName,
-		ToolGraphqlQueryInstructions,
-		GraphqlQueryRequest{}, //nolint:exhaustruct
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create %s tool: %w", ToolGraphqlQueryName, err)
-	}
-
-	mcpServer.RegisterTool(queryTool, t.handleGraphqlQuery)
+func (t *Tool) Register(mcpServer *server.MCPServer) error {
+	t.registerGetGraphqlSchema(mcpServer)
+	t.registerGraphqlQuery(mcpServer)
 
 	return nil
 }
