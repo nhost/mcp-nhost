@@ -23,11 +23,33 @@ The following tools are currently exposed through the MCP interface:
    - Retrieves the GraphQL schema for local Nhost development projects
    - Provides access to project-specific queries and mutations
    - Helps understand available operations for local development helping generating code
+   - Uses "user" role unless specified otherwise
 
 4. **local_graphql_query**
    - Executes GraphQL queries against local Nhost development projects
    - Enables testing and development of project-specific operations
    - Supports both queries and mutations for local development
+   - Uses "user" role unless specified otherwise
+
+5. **local_config_server_schema**
+   - Retrieves the GraphQL schema for the local config server
+   - Helps understand available configuration options
+
+6. **local_config_server_query**
+   - Executes GraphQL queries against the local config server
+   - Enables querying and modifying local project configuration
+   - Changes require running 'nhost up' to take effect
+
+7. **project_get_graphql_schema**
+   - Retrieves the GraphQL schema for Nhost Cloud projects
+   - Provides access to project-specific queries and mutations
+   - Uses "user" role unless specified otherwise
+
+8. **project_graphql_query**
+   - Executes GraphQL queries against Nhost Cloud projects
+   - Enables interaction with live project data
+   - Supports both queries and mutations (need to be allowed)
+   - Uses "user" role unless specified otherwise   
 
 ## Screenshots and Examples
 
