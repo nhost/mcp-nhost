@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"net/http"
 
-	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
@@ -34,44 +33,8 @@ func NewTool(
 }
 
 func (t *Tool) Register(mcpServer *server.MCPServer) error {
-	schemaTool := mcp.NewTool(
-		ToolGetGraphqlSchemaName,
-		mcp.WithDescription(ToolGetGraphqlSchemaInstructions),
-		mcp.WithToolAnnotation(
-			mcp.ToolAnnotation{
-				Title:           "Get GraphQL Schema for Nhost Cloud Platform",
-				ReadOnlyHint:    true,
-				DestructiveHint: false,
-				IdempotentHint:  true,
-				OpenWorldHint:   true,
-			},
-		),
-	)
-	mcpServer.AddTool(schemaTool, t.handleGetGraphqlSchema)
-
-	queryTool := mcp.NewTool(
-		ToolGraphqlQueryName,
-		mcp.WithDescription(ToolGraphqlQueryInstructions),
-		mcp.WithToolAnnotation(
-			mcp.ToolAnnotation{
-				Title:           "Perform GraphQL Query on Nhost Cloud Platform",
-				ReadOnlyHint:    !t.withMutations,
-				DestructiveHint: t.withMutations,
-				IdempotentHint:  false,
-				OpenWorldHint:   true,
-			},
-		),
-		mcp.WithString(
-			"query",
-			mcp.Description("graphql query to perform"),
-			mcp.Required(),
-		),
-		mcp.WithString(
-			"variables",
-			mcp.Description("variables to use in the query"),
-		),
-	)
-	mcpServer.AddTool(queryTool, t.handleGraphqlQuery)
+	t.registerGetGraphqlSchema(mcpServer)
+	t.registerGraphqlQuery(mcpServer)
 
 	return nil
 }

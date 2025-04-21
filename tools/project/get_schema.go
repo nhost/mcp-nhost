@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
 	"github.com/nhost/mcp-nhost/graphql"
 	"github.com/nhost/mcp-nhost/nhost/auth"
 	"github.com/nhost/mcp-nhost/tools"
@@ -14,6 +15,30 @@ const (
 	ToolGetGraphqlSchemaName         = "project-get-graphql-schema"
 	ToolGetGraphqlSchemaInstructions = `Get GraphQL schema for an Nhost project running in the Nhost Cloud.`
 )
+
+func (t *Tool) registerGetGraphqlSchemaTool(mcpServer *server.MCPServer) {
+	schemaTool := mcp.NewTool(
+		ToolGetGraphqlSchemaName,
+		mcp.WithDescription(ToolGetGraphqlSchemaInstructions),
+		mcp.WithToolAnnotation(
+			mcp.ToolAnnotation{
+				Title:           "Get GraphQL Schema for Nhost Project running on Nhost Cloud",
+				ReadOnlyHint:    true,
+				DestructiveHint: false,
+				IdempotentHint:  true,
+				OpenWorldHint:   true,
+			},
+		),
+		mcp.WithString(
+			"role",
+			mcp.Description(
+				"role to use when executing queries. Default to user but make sure the user is aware",
+			),
+			mcp.Required(),
+		),
+	)
+	mcpServer.AddTool(schemaTool, t.handleGetGraphqlSchema)
+}
 
 func (t *Tool) handleGetGraphqlSchema(
 	ctx context.Context, req mcp.CallToolRequest,

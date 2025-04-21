@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
 	"github.com/nhost/mcp-nhost/graphql"
 	"github.com/nhost/mcp-nhost/tools"
 )
@@ -15,6 +16,32 @@ const (
 	//nolint:lll
 	ToolConfigServerQueryInstructions = `Execute a GraphQL query against the local config server. This tool is useful to query and perform configuration changes on the local development project. Before using this tool, make sure to get the schema using the local-config-server-schema tool. To perform configuration changes this endpoint is all you need but to apply them you need to run 'nhost up' again. Ask the user for input when you need information about settings, for instance if the user asks to enable some oauth2 method and you need the client id or secret.`
 )
+
+func (t *Tool) registerConfigServerQuery(mcpServer *server.MCPServer) {
+	configServerQueryTool := mcp.NewTool(
+		ToolConfigServerQueryName,
+		mcp.WithDescription(ToolConfigServerQueryInstructions),
+		mcp.WithToolAnnotation(
+			mcp.ToolAnnotation{
+				Title:           "Perform GraphQL Query on Nhost Config Server",
+				ReadOnlyHint:    false,
+				DestructiveHint: true,
+				IdempotentHint:  false,
+				OpenWorldHint:   true,
+			},
+		),
+		mcp.WithString(
+			"query",
+			mcp.Description("graphql query to perform"),
+			mcp.Required(),
+		),
+		mcp.WithString(
+			"variables",
+			mcp.Description("variables to use in the query"),
+		),
+	)
+	mcpServer.AddTool(configServerQueryTool, t.handleConfigServerQuery)
+}
 
 func (t *Tool) handleConfigServerQuery(
 	ctx context.Context, req mcp.CallToolRequest,

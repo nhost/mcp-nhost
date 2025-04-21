@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
 	"github.com/nhost/mcp-nhost/graphql"
 )
 
@@ -14,7 +15,24 @@ const (
 	ToolConfigServerSchemaInstructions = `Get GraphQL schema for the local config server. This tool is useful when the user is developing a project and wants help changing the project's settings.`
 )
 
-func (t *Tool) handleConfigServerSchema(
+func (t *Tool) registerGetConfigServerSchema(mcpServer *server.MCPServer) {
+	configServerSchemaTool := mcp.NewTool(
+		ToolConfigServerSchemaName,
+		mcp.WithDescription(ToolConfigServerSchemaInstructions),
+		mcp.WithToolAnnotation(
+			mcp.ToolAnnotation{
+				Title:           "Get GraphQL Schema for Nhost Config Server",
+				ReadOnlyHint:    true,
+				DestructiveHint: false,
+				IdempotentHint:  true,
+				OpenWorldHint:   true,
+			},
+		),
+	)
+	mcpServer.AddTool(configServerSchemaTool, t.handleConfigGetServerSchema)
+}
+
+func (t *Tool) handleConfigGetServerSchema(
 	ctx context.Context, _ mcp.CallToolRequest,
 ) (*mcp.CallToolResult, error) {
 	var introspection graphql.ResponseIntrospection
