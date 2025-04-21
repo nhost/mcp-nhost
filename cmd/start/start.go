@@ -2,7 +2,9 @@ package start
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/ThinkInAIXYZ/go-mcp/pkg"
 	"github.com/ThinkInAIXYZ/go-mcp/protocol"
@@ -11,18 +13,25 @@ import (
 	"github.com/nhost/mcp-nhost/nhost/auth"
 	"github.com/nhost/mcp-nhost/tools/cloud"
 	"github.com/nhost/mcp-nhost/tools/local"
+	"github.com/nhost/mcp-nhost/tools/project"
 	"github.com/urfave/cli/v3"
 )
 
 const (
-	flagNhostAuthURL         = "nhost-auth-url"
-	flagNhostGraphqlURL      = "nhost-graphql-url"
-	flagNhostPAT             = "nhost-pat"
-	flagBind                 = "bind"
-	flagWithCloudMutations   = "with-cloud-mutations"
-	flagLocalAdminSecret     = "local-admin-secret" //nolint:gosec
-	flagLocalGraphqlURL      = "local-graphql-url"
-	flagLocalConfigServerURL = "local-config-server-url"
+	flagNhostAuthURL          = "nhost-auth-url"
+	flagNhostGraphqlURL       = "nhost-graphql-url"
+	flagNhostPAT              = "nhost-pat"
+	flagBind                  = "bind"
+	flagWithCloudMutations    = "with-cloud-mutations"
+	flagLocalAdminSecret      = "local-admin-secret" //nolint:gosec
+	flagLocalGraphqlURL       = "local-graphql-url"
+	flagLocalConfigServerURL  = "local-config-server-url"
+	flagProjectSubdomain      = "project-subdomain"
+	flagProjectRegion         = "project-region"
+	flagProjectAdminSecret    = "project-admin-secret"
+	flagProjectPAT            = "project-pat"
+	flagProjectAllowQueries   = "project-allow-queries"
+	flagProjectAllowMutations = "project-allow-mutations"
 )
 
 const (
@@ -47,7 +56,7 @@ const (
 	`
 )
 
-func Command() *cli.Command {
+func Command() *cli.Command { //nolint:funlen
 	return &cli.Command{ //nolint:exhaustruct
 		Name:  "start",
 		Usage: "Starts the MCP server",
@@ -113,6 +122,48 @@ func Command() *cli.Command {
 				Category: "Local Development",
 				Sources:  cli.EnvVars("LOCAL_CONFIG_SERVER_URL"),
 			},
+			&cli.StringFlag{ //nolint:exhaustruct
+				Name:     flagProjectSubdomain,
+				Usage:    "Subdomain for the project",
+				Required: false,
+				Category: "Cloud Project",
+				Sources:  cli.EnvVars("PROJECT_SUBDOMAIN"),
+			},
+			&cli.StringFlag{ //nolint:exhaustruct
+				Name:     flagProjectRegion,
+				Usage:    "Region for the project",
+				Required: false,
+				Category: "Cloud Project",
+				Sources:  cli.EnvVars("PROJECT_REGION"),
+			},
+			&cli.StringFlag{ //nolint:exhaustruct
+				Name:     flagProjectAdminSecret,
+				Usage:    "Admin secret for the project",
+				Required: false,
+				Category: "Cloud Project",
+				Sources:  cli.EnvVars("PROJECT_ADMIN_SECRET"),
+			},
+			&cli.StringFlag{ //nolint:exhaustruct
+				Name:     flagProjectPAT,
+				Usage:    "Personal Access Token for the project",
+				Required: false,
+				Category: "Cloud Project",
+				Sources:  cli.EnvVars("PROJECT_PAT"),
+			},
+			&cli.StringSliceFlag{ //nolint:exhaustruct
+				Name:     flagProjectAllowQueries,
+				Usage:    "Allow queries for the project. If empty, no queries are allowed. Use * to allow all queries. Can be passed multiple times", //nolint:lll
+				Required: false,
+				Category: "Cloud Project",
+				Sources:  cli.EnvVars("PROJECT_ALLOW_QUERIES"),
+			},
+			&cli.StringSliceFlag{ //nolint:exhaustruct
+				Name:     flagProjectAllowMutations,
+				Usage:    "Allow mutations for the project. If empty, no mutations are allowed. Use * to allow all mutations. Can be passed multiple times", //nolint:lll
+				Required: false,
+				Category: "Cloud Project",
+				Sources:  cli.EnvVars("PROJECT_ALLOW_MUTATIONS"),
+			},
 		},
 		Action: action,
 	}
@@ -127,6 +178,60 @@ func getLogger(debug bool) pkg.Logger { //nolint:ireturn
 	}
 
 	return logger
+}
+
+func registerProjectTool( //nolint:cyclop
+	mcpServer *server.Server,
+	cmd *cli.Command,
+) error {
+	if cmd.String(flagProjectSubdomain) == "" {
+		return nil
+	}
+
+	if cmd.String(flagProjectRegion) == "" {
+		return errors.New("project region is required when project subdomain is set") //nolint:goerr113
+	}
+
+	graphqlURL := fmt.Sprintf(
+		"https://%s.graphql.%s.nhost.run/v1",
+		cmd.String(flagProjectSubdomain),
+		cmd.String(flagProjectRegion),
+	)
+
+	var interceptor func(ctx context.Context, req *http.Request) error
+	switch {
+	case cmd.String(flagProjectAdminSecret) != "":
+		interceptor = auth.WithAdminSecret(cmd.String(flagProjectAdminSecret))
+	case cmd.String(flagProjectPAT) != "":
+		authURL := fmt.Sprintf(
+			"https://%s.auth.%s.nhost.run/v1",
+			cmd.String(flagProjectSubdomain),
+			cmd.String(flagProjectRegion),
+		)
+		var err error
+		interceptor, err = auth.WithPAT(authURL, cmd.String(flagProjectPAT))
+		if err != nil {
+			return fmt.Errorf("failed to create PAT interceptor: %w", err)
+		}
+	}
+
+	allowQueries := cmd.StringSlice(flagProjectAllowQueries)
+	if len(allowQueries) == 1 && allowQueries[0] == "*" {
+		allowQueries = nil
+	}
+
+	allowMutations := cmd.StringSlice(flagProjectAllowMutations)
+	if len(allowMutations) == 1 && allowMutations[0] == "*" {
+		allowMutations = nil
+	}
+
+	projectTool := project.NewTool(graphqlURL, allowQueries, allowMutations, interceptor)
+
+	if err := projectTool.Register(mcpServer); err != nil {
+		return fmt.Errorf("failed to register project tool: %w", err)
+	}
+
+	return nil
 }
 
 func action(_ context.Context, cmd *cli.Command) error { //nolint:funlen
@@ -183,6 +288,10 @@ func action(_ context.Context, cmd *cli.Command) error { //nolint:funlen
 	)
 	if err := localTool.Register(mcpServer); err != nil {
 		return cli.Exit(fmt.Sprintf("failed to register local tools: %v", err), 1)
+	}
+
+	if err := registerProjectTool(mcpServer, cmd); err != nil {
+		return cli.Exit(fmt.Sprintf("failed to register project tools: %v", err), 1)
 	}
 
 	logger.Infof("starting mcp server")

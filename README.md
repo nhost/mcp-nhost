@@ -95,12 +95,12 @@ The examples below enable mutations against the cloud and your projects via the 
 - ✅ Cloud projects: Configuration management
 - ✅ Local projects: Configuration management
 - ✅ Local projects: Graphql Schema awareness and query execution
-- 🔄 Local projects: Auth and Storage schema awareness
-- 🔄 Cloud projects: Schema awareness and query execution
-- 🔄 Cloud projects: Auth and Storage schema awareness
+- ✅ Cloud projects: Schema awareness and query execution
 - 🔄 Local projects: Create migrations
 - 🔄 Local projects: Manage permissions
-- 🔄 Documentation: integrate or document use of mintlify's generated mcp server
+- 🔄 Documentation: integrate or document use of mintlify's mcp server
+- 🔄 Local projects: Auth and Storage schema awareness (maybe via mintlify?)
+- 🔄 Cloud projects: Auth and Storage schema awareness (maybe via mintlify?)
 
 If you have any suggestions or feature requests, please feel free to open an issue for discussion.
 

@@ -2,32 +2,32 @@
 
 Listing cloud projects:
 
-![listing cloud projects](screenshots/101-cloud-projects.png)
+<img src="screenshots/101-cloud-projects.png" width="400" alt="listing cloud projects">
 
 Changing cloud project's configuration:
 
-![changing cloud project's configuration](screenshots/102-cloud-project-config.png)
+<img src="screenshots/102-cloud-project-config.png" width="400" alt="changing cloud project's configuration">
 
 Querying cloud project's configuration:
 
-![querying cloud project's configuration](screenshots/103-cloud-project-config2.png)
+<img src="screenshots/103-cloud-project-config2.png" width="400" alt="querying cloud project's configuration">
 
 Querying local project's schema:
 
-![querying local project's schema](screenshots/201-local-schema.png)
+<img src="screenshots/201-local-schema.png" width="400" alt="querying local project's schema">
 
 Generating code from local project's schema:
 
-![generating code from local project's schema](screenshots/202-local-code.png)
+<img src="screenshots/202-local-code.png" alt="generating code from local project's schema">
 
 Resulting code:
 
-![resulting code](screenshots/203-result.png)
+<img src="screenshots/203-result.png" alt="resulting code">
 
 Querying local project's configuration:
 
-![querying local project's configuration](screenshots/204-local-config-query.png)
+<img src="screenshots/204-local-config-query.png" width="400" alt="querying local project's configuration">
 
 Modifying local project's configuration:
 
-![modifying local project's configuration](screenshots/205-local-config-change.png)
+<img src="screenshots/205-local-config-change.png" width="400" alt="modifying local project's configuration">
