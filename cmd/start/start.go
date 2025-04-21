@@ -189,7 +189,9 @@ func registerProjectTool( //nolint:cyclop
 	}
 
 	if cmd.String(flagProjectRegion) == "" {
-		return errors.New("project region is required when project subdomain is set") //nolint:goerr113
+		return errors.New( //nolint:goerr113
+			"project region is required when project subdomain is set",
+		)
 	}
 
 	graphqlURL := fmt.Sprintf(

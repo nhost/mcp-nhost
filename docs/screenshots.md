@@ -31,3 +31,19 @@ Querying local project's configuration:
 Modifying local project's configuration:
 
 <img src="screenshots/205-local-config-change.png" width="400" alt="modifying local project's configuration">
+
+Querying cloud project's schema:
+
+<img src="screenshots/301-project-schema.png" width="400" alt="project schema">
+
+Querying cloud project's data:
+
+<img src="screenshots/302-project-query.png" width="400" alt="project data">
+
+Managing cloud project's data:
+
+<img src="screenshots/303-project-mutation.png" width="400" alt="project mutation">
+
+Analysing cloud project's data:
+
+<img src="screenshots/304-project-data-analysis.png" width="400" alt="project data analysis">
