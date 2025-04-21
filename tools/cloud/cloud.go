@@ -3,11 +3,10 @@ package cloud
 import (
 	"context"
 	_ "embed"
-	"fmt"
 	"net/http"
 
-	"github.com/ThinkInAIXYZ/go-mcp/protocol"
-	"github.com/ThinkInAIXYZ/go-mcp/server"
+	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
 )
 
 //go:embed schema.graphql
@@ -34,28 +33,45 @@ func NewTool(
 	}
 }
 
-func (t *Tool) Register(mcpServer *server.Server) error {
-	schemaTool, err := protocol.NewTool(
+func (t *Tool) Register(mcpServer *server.MCPServer) error {
+	schemaTool := mcp.NewTool(
 		ToolGetGraphqlSchemaName,
-		ToolGetGraphqlSchemaInstructions,
-		GetGraphqlSchemaRequest{},
+		mcp.WithDescription(ToolGetGraphqlSchemaInstructions),
+		mcp.WithToolAnnotation(
+			mcp.ToolAnnotation{
+				Title:           "Get GraphQL Schema for Nhost Cloud Platform",
+				ReadOnlyHint:    true,
+				DestructiveHint: false,
+				IdempotentHint:  true,
+				OpenWorldHint:   true,
+			},
+		),
 	)
-	if err != nil {
-		return fmt.Errorf("failed to create %s tool: %w", ToolGetGraphqlSchemaName, err)
-	}
+	mcpServer.AddTool(schemaTool, t.handleGetGraphqlSchema)
 
-	mcpServer.RegisterTool(schemaTool, t.handleGetGraphqlSchema)
-
-	queryTool, err := protocol.NewTool(
+	queryTool := mcp.NewTool(
 		ToolGraphqlQueryName,
-		ToolGraphqlQueryInstructions,
-		GraphqlQueryRequest{}, //nolint:exhaustruct
+		mcp.WithDescription(ToolGraphqlQueryInstructions),
+		mcp.WithToolAnnotation(
+			mcp.ToolAnnotation{
+				Title:           "Perform GraphQL Query on Nhost Cloud Platform",
+				ReadOnlyHint:    !t.withMutations,
+				DestructiveHint: t.withMutations,
+				IdempotentHint:  false,
+				OpenWorldHint:   true,
+			},
+		),
+		mcp.WithString(
+			"query",
+			mcp.Description("graphql query to perform"),
+			mcp.Required(),
+		),
+		mcp.WithString(
+			"variables",
+			mcp.Description("variables to use in the query"),
+		),
 	)
-	if err != nil {
-		return fmt.Errorf("failed to create %s tool: %w", ToolGraphqlQueryName, err)
-	}
-
-	mcpServer.RegisterTool(queryTool, t.handleGraphqlQuery)
+	mcpServer.AddTool(queryTool, t.handleGraphqlQuery)
 
 	return nil
 }

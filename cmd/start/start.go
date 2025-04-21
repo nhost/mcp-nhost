@@ -6,10 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ThinkInAIXYZ/go-mcp/pkg"
-	"github.com/ThinkInAIXYZ/go-mcp/protocol"
-	"github.com/ThinkInAIXYZ/go-mcp/server"
-	"github.com/ThinkInAIXYZ/go-mcp/transport"
+	"github.com/mark3labs/mcp-go/server"
 	"github.com/nhost/mcp-nhost/nhost/auth"
 	"github.com/nhost/mcp-nhost/tools/cloud"
 	"github.com/nhost/mcp-nhost/tools/local"
@@ -169,19 +166,8 @@ func Command() *cli.Command { //nolint:funlen
 	}
 }
 
-func getLogger(debug bool) pkg.Logger { //nolint:ireturn
-	var logger pkg.Logger
-	if debug {
-		logger = pkg.DebugLogger
-	} else {
-		logger = pkg.DefaultLogger
-	}
-
-	return logger
-}
-
 func registerProjectTool( //nolint:cyclop
-	mcpServer *server.Server,
+	mcpServer *server.MCPServer,
 	cmd *cli.Command,
 ) error {
 	if cmd.String(flagProjectSubdomain) == "" {
@@ -236,36 +222,12 @@ func registerProjectTool( //nolint:cyclop
 	return nil
 }
 
-func action(_ context.Context, cmd *cli.Command) error { //nolint:funlen
-	logger := getLogger(cmd.Bool("debug"))
-
-	var transportServer transport.ServerTransport
-	var err error
-	if bind := cmd.String(flagBind); bind != "" {
-		logger.Infof("listening on " + bind)
-		transportServer, err = transport.NewSSEServerTransport(bind)
-	} else {
-		logger.Infof("listening on stdio")
-		transportServer = transport.NewStdioServerTransport()
-	}
-	if err != nil {
-		return cli.Exit(fmt.Sprintf("failed to create transport server: %v", err), 1)
-	}
-
-	mcpServer, err := server.NewServer(
-		transportServer,
-		server.WithServerInfo(
-			protocol.Implementation{
-				Name:    cmd.Root().Name,
-				Version: cmd.Root().Version,
-			},
-		),
-		server.WithLogger(logger),
+func action(_ context.Context, cmd *cli.Command) error {
+	mcpServer := server.NewMCPServer(
+		cmd.Root().Name,
+		cmd.Root().Version,
 		server.WithInstructions(ServerInstructions),
 	)
-	if err != nil {
-		return cli.Exit(fmt.Sprintf("failed to create mcp server: %v", err), 1)
-	}
 
 	interceptor, err := auth.WithPAT(
 		cmd.String(flagNhostAuthURL),
@@ -296,9 +258,22 @@ func action(_ context.Context, cmd *cli.Command) error { //nolint:funlen
 		return cli.Exit(fmt.Sprintf("failed to register project tools: %v", err), 1)
 	}
 
-	logger.Infof("starting mcp server")
-	if err = mcpServer.Run(); err != nil {
-		return cli.Exit(fmt.Sprintf("failed to run mcp server: %v", err), 1)
+	return start(mcpServer, cmd.String(flagBind))
+}
+
+func start(
+	mcpServer *server.MCPServer,
+	bind string,
+) error {
+	if bind != "" {
+		sseServer := server.NewSSEServer(mcpServer, server.WithBaseURL(bind))
+		if err := sseServer.Start(bind); err != nil {
+			return cli.Exit(fmt.Sprintf("failed to serve tcp: %v", err), 1)
+		}
+	} else {
+		if err := server.ServeStdio(mcpServer); err != nil {
+			return cli.Exit(fmt.Sprintf("failed to serve stdio: %v", err), 1)
+		}
 	}
 
 	return nil

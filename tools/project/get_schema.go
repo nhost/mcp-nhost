@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ThinkInAIXYZ/go-mcp/protocol"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nhost/mcp-nhost/graphql"
 	"github.com/nhost/mcp-nhost/nhost/auth"
+	"github.com/nhost/mcp-nhost/tools"
 )
 
 const (
@@ -14,27 +15,22 @@ const (
 	ToolGetGraphqlSchemaInstructions = `Get GraphQL schema for an Nhost project running in the Nhost Cloud.`
 )
 
-//nolint:lll
-type GetGraphqlSchemaRequest struct {
-	Role string `description:"role to use when executing queries. Default to user but make sure the user is aware" json:"role" required:"true"`
-}
-
 func (t *Tool) handleGetGraphqlSchema(
-	req *protocol.CallToolRequest,
-) (*protocol.CallToolResult, error) {
-	var schemaReq GetGraphqlSchemaRequest
-	if err := protocol.VerifyAndUnmarshal(req.RawArguments, &schemaReq); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal request: %w", err)
+	ctx context.Context, req mcp.CallToolRequest,
+) (*mcp.CallToolResult, error) {
+	role, err := tools.RoleFromParams(req.Params.Arguments)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
 	}
 
 	interceptors := append( //nolint:gocritic
 		t.interceptors,
-		auth.WithRole(schemaReq.Role),
+		auth.WithRole(role),
 	)
 
 	var introspection graphql.ResponseIntrospection
 	if err := graphql.Query(
-		context.Background(),
+		ctx,
 		t.graphqlURL,
 		graphql.IntrospectionQuery,
 		nil,
@@ -52,10 +48,13 @@ func (t *Tool) handleGetGraphqlSchema(
 		},
 	)
 
-	return &protocol.CallToolResult{
-		Content: []protocol.Content{
-			protocol.TextContent{
-				Annotated: protocol.Annotated{
+	return &mcp.CallToolResult{
+		Result: mcp.Result{
+			Meta: nil,
+		},
+		Content: []mcp.Content{
+			mcp.TextContent{
+				Annotated: mcp.Annotated{
 					Annotations: nil,
 				},
 				Type: "text",

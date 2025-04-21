@@ -81,22 +81,12 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 			Capabilities: mcp.ServerCapabilities{
 				Experimental: nil,
 				Logging:      nil,
-				Prompts: &struct {
-					ListChanged bool "json:\"listChanged,omitempty\""
-				}{
-					ListChanged: true,
-				},
-				Resources: &struct {
-					Subscribe   bool "json:\"subscribe,omitempty\""
-					ListChanged bool "json:\"listChanged,omitempty\""
-				}{
-					Subscribe:   true,
-					ListChanged: true,
-				},
+				Prompts:      nil,
+				Resources:    nil,
 				Tools: &struct {
 					ListChanged bool "json:\"listChanged,omitempty\""
 				}{
-					ListChanged: true,
+					ListChanged: false,
 				},
 			},
 			ServerInfo: mcp.Implementation{
@@ -133,6 +123,13 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 						Properties: nil,
 						Required:   nil,
 					},
+					Annotations: mcp.ToolAnnotation{
+						Title:           "Get GraphQL Schema for Nhost Cloud Platform",
+						ReadOnlyHint:    true,
+						DestructiveHint: false,
+						IdempotentHint:  true,
+						OpenWorldHint:   true,
+					},
 				},
 				{
 					Name:        "cloud-graphql-query",
@@ -150,6 +147,29 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 							},
 						},
 						Required: []string{"query"},
+					},
+					Annotations: mcp.ToolAnnotation{
+						Title:           "Perform GraphQL Query on Nhost Cloud Platform",
+						ReadOnlyHint:    false,
+						DestructiveHint: true,
+						IdempotentHint:  false,
+						OpenWorldHint:   true,
+					},
+				},
+				{
+					Name:        "local-config-server-get-schema",
+					Description: local.ToolConfigServerSchemaInstructions,
+					InputSchema: mcp.ToolInputSchema{
+						Type:       "object",
+						Properties: nil,
+						Required:   nil,
+					},
+					Annotations: mcp.ToolAnnotation{
+						Title:           "Get GraphQL Schema for Nhost Config Server",
+						ReadOnlyHint:    true,
+						DestructiveHint: false,
+						IdempotentHint:  true,
+						OpenWorldHint:   true,
 					},
 				},
 				{
@@ -169,14 +189,12 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 						},
 						Required: []string{"query"},
 					},
-				},
-				{
-					Name:        "local-config-server-schema",
-					Description: local.ToolConfigServerSchemaInstructions,
-					InputSchema: mcp.ToolInputSchema{
-						Type:       "object",
-						Properties: nil,
-						Required:   nil,
+					Annotations: mcp.ToolAnnotation{
+						Title:           "Perform GraphQL Query on Nhost Config Server",
+						ReadOnlyHint:    false,
+						DestructiveHint: true,
+						IdempotentHint:  false,
+						OpenWorldHint:   true,
 					},
 				},
 				{
@@ -191,6 +209,13 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 							},
 						},
 						Required: []string{"role"},
+					},
+					Annotations: mcp.ToolAnnotation{
+						Title:           "Get GraphQL Schema for Nhost Development Project",
+						ReadOnlyHint:    true,
+						DestructiveHint: false,
+						IdempotentHint:  true,
+						OpenWorldHint:   true,
 					},
 				},
 				{
@@ -214,6 +239,13 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 						},
 						Required: []string{"query", "role"},
 					},
+					Annotations: mcp.ToolAnnotation{
+						Title:           "Perform GraphQL Query on Nhost Development Project",
+						ReadOnlyHint:    false,
+						DestructiveHint: true,
+						IdempotentHint:  false,
+						OpenWorldHint:   true,
+					},
 				},
 				{
 					Name:        "project-get-graphql-schema",
@@ -227,6 +259,13 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 							},
 						},
 						Required: []string{"role"},
+					},
+					Annotations: mcp.ToolAnnotation{
+						Title:           "Get GraphQL Schema for Nhost Project running on Nhost Cloud",
+						ReadOnlyHint:    true,
+						DestructiveHint: false,
+						IdempotentHint:  true,
+						OpenWorldHint:   true,
 					},
 				},
 				{
@@ -250,6 +289,13 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 						},
 						Required: []string{"query", "role"},
 					},
+					Annotations: mcp.ToolAnnotation{
+						Title:           "Perform GraphQL Query on Nhost Project running on Nhost Cloud",
+						ReadOnlyHint:    false,
+						DestructiveHint: true,
+						IdempotentHint:  false,
+						OpenWorldHint:   true,
+					},
 				},
 			},
 		},
@@ -260,39 +306,43 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 		t.Errorf("ListToolsResult mismatch (-want +got):\n%s", diff)
 	}
 
-	resources, err := mcpClient.ListResources(
-		context.Background(),
-		mcp.ListResourcesRequest{}, //nolint:exhaustruct
-	)
-	if err != nil {
-		t.Fatalf("failed to list resources: %v", err)
+	if res.Capabilities.Resources != nil {
+		resources, err := mcpClient.ListResources(
+			context.Background(),
+			mcp.ListResourcesRequest{}, //nolint:exhaustruct
+		)
+		if err != nil {
+			t.Fatalf("failed to list resources: %v", err)
+		}
+
+		if diff := cmp.Diff(
+			resources,
+			//nolint:exhaustruct
+			&mcp.ListResourcesResult{
+				Resources: []mcp.Resource{},
+			},
+		); diff != "" {
+			t.Errorf("ListResourcesResult mismatch (-want +got):\n%s", diff)
+		}
 	}
 
-	if diff := cmp.Diff(
-		resources,
-		//nolint:exhaustruct
-		&mcp.ListResourcesResult{
-			Resources: []mcp.Resource{},
-		},
-	); diff != "" {
-		t.Errorf("ListResourcesResult mismatch (-want +got):\n%s", diff)
-	}
+	if res.Capabilities.Prompts != nil {
+		prompts, err := mcpClient.ListPrompts(
+			context.Background(),
+			mcp.ListPromptsRequest{}, //nolint:exhaustruct
+		)
+		if err != nil {
+			t.Fatalf("failed to list prompts: %v", err)
+		}
 
-	prompts, err := mcpClient.ListPrompts(
-		context.Background(),
-		mcp.ListPromptsRequest{}, //nolint:exhaustruct
-	)
-	if err != nil {
-		t.Fatalf("failed to list prompts: %v", err)
-	}
-
-	if diff := cmp.Diff(
-		prompts,
-		//nolint:exhaustruct
-		&mcp.ListPromptsResult{
-			Prompts: []mcp.Prompt{},
-		},
-	); diff != "" {
-		t.Errorf("ListPromptsResult mismatch (-want +got):\n%s", diff)
+		if diff := cmp.Diff(
+			prompts,
+			//nolint:exhaustruct
+			&mcp.ListPromptsResult{
+				Prompts: []mcp.Prompt{},
+			},
+		); diff != "" {
+			t.Errorf("ListPromptsResult mismatch (-want +got):\n%s", diff)
+		}
 	}
 }

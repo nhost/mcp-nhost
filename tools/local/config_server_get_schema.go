@@ -4,24 +4,22 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ThinkInAIXYZ/go-mcp/protocol"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nhost/mcp-nhost/graphql"
 )
 
 const (
-	ToolConfigServerSchemaName = "local-config-server-schema"
+	ToolConfigServerSchemaName = "local-config-server-get-schema"
 	//nolint:lll
 	ToolConfigServerSchemaInstructions = `Get GraphQL schema for the local config server. This tool is useful when the user is developing a project and wants help changing the project's settings.`
 )
 
-type ConfigServerSchemaRequest struct{}
-
 func (t *Tool) handleConfigServerSchema(
-	_ *protocol.CallToolRequest,
-) (*protocol.CallToolResult, error) {
+	ctx context.Context, _ mcp.CallToolRequest,
+) (*mcp.CallToolResult, error) {
 	var introspection graphql.ResponseIntrospection
 	if err := graphql.Query(
-		context.Background(),
+		ctx,
 		t.configServerURL,
 		graphql.IntrospectionQuery,
 		nil,
@@ -39,10 +37,13 @@ func (t *Tool) handleConfigServerSchema(
 		},
 	)
 
-	return &protocol.CallToolResult{
-		Content: []protocol.Content{
-			protocol.TextContent{
-				Annotated: protocol.Annotated{
+	return &mcp.CallToolResult{
+		Result: mcp.Result{
+			Meta: nil,
+		},
+		Content: []mcp.Content{
+			mcp.TextContent{
+				Annotated: mcp.Annotated{
 					Annotations: nil,
 				},
 				Type: "text",

@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ThinkInAIXYZ/go-mcp/protocol"
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nhost/mcp-nhost/graphql"
 	"github.com/nhost/mcp-nhost/nhost/auth"
+	"github.com/nhost/mcp-nhost/tools"
 )
 
 const (
@@ -16,38 +17,25 @@ const (
 	ToolGraphqlQueryInstructions = `Execute a GraphQL query against a Nhost project running in the Nhost Cloud. This tool is useful to query and mutate live data running on an online projec. If you run into issues executing queries, retrieve the schema using the project-get-graphql-schema tool in case the schema has changed. If you get an error indicating the query or mutation is not allowed the user may have disabled them in the server, don't retry and tell the user they need to enable them when starting mcp-nhost`
 )
 
-//nolint:lll
-type GraphqlQueryRequest struct {
-	Query     string `description:"graphql query to perform"      json:"query"     required:"true"`
-	Variables string `description:"variables to use in the query" json:"variables" required:"false"`
-
-	Role string `description:"role to use when executing queries. Default to user but make sure the user is aware. Keep in mind the schema depends on the role so if you retrieved the schema for a different role previously retrieve it for this role beforehand as it might differ" json:"role" required:"true"`
-}
-
-func (t *Tool) handleGraphqlQuery(req *protocol.CallToolRequest) (*protocol.CallToolResult, error) {
-	var graphReq GraphqlQueryRequest
-	if err := protocol.VerifyAndUnmarshal(req.RawArguments, &graphReq); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal request: %w", err)
-	}
-
-	var variables map[string]any
-	if graphReq.Variables != "" {
-		if err := json.Unmarshal([]byte(graphReq.Variables), &variables); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal variables: %w", err)
-		}
+func (t *Tool) handleGraphqlQuery(
+	ctx context.Context, req mcp.CallToolRequest,
+) (*mcp.CallToolResult, error) {
+	request, err := tools.QueryRequestWithRoleFromParams(req.Params.Arguments)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
 	}
 
 	interceptors := append( //nolint:gocritic
 		t.interceptors,
-		auth.WithRole(graphReq.Role),
+		auth.WithRole(request.Role),
 	)
 
 	var resp graphql.Response[any]
 	if err := graphql.Query(
-		context.Background(),
+		ctx,
 		t.graphqlURL,
-		graphReq.Query,
-		variables,
+		request.Query,
+		request.Variables,
 		&resp,
 		interceptors...,
 	); err != nil {
@@ -59,10 +47,13 @@ func (t *Tool) handleGraphqlQuery(req *protocol.CallToolRequest) (*protocol.Call
 		return nil, fmt.Errorf("failed to marshal response: %w", err)
 	}
 
-	return &protocol.CallToolResult{
-		Content: []protocol.Content{
-			protocol.TextContent{
-				Annotated: protocol.Annotated{
+	return &mcp.CallToolResult{
+		Result: mcp.Result{
+			Meta: nil,
+		},
+		Content: []mcp.Content{
+			mcp.TextContent{
+				Annotated: mcp.Annotated{
 					Annotations: nil,
 				},
 				Type: "text",

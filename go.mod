@@ -3,7 +3,6 @@ module github.com/nhost/mcp-nhost
 go 1.23.8
 
 require (
-	github.com/ThinkInAIXYZ/go-mcp v0.1.13
 	github.com/go-webauthn/webauthn v0.12.3
 	github.com/google/go-cmp v0.5.9
 	github.com/mark3labs/mcp-go v0.22.0
