@@ -14,6 +14,7 @@ import (
 	"github.com/nhost/mcp-nhost/cmd/start"
 	"github.com/nhost/mcp-nhost/tools/cloud"
 	"github.com/nhost/mcp-nhost/tools/local"
+	"github.com/nhost/mcp-nhost/tools/project"
 )
 
 func TestStart(t *testing.T) { //nolint:cyclop
@@ -27,7 +28,18 @@ func TestStart(t *testing.T) { //nolint:cyclop
 	go func() {
 		if err := cmd.Run(
 			context.Background(),
-			[]string{"main", "start", "--bind=:9000", "--nhost-pat=asdasd"},
+			[]string{
+				"main",
+				"start",
+				"--bind=:9000",
+				"--nhost-pat=asdasd",
+				"--with-cloud-mutations",
+				"--project-subdomain=fake-subdomain",
+				"--project-region=fake-region",
+				"--project-admin-secret=fake-admin-secret",
+				"--project-allow-queries=*",
+				"--project-allow-mutations=*",
+			},
 		); err != nil {
 			panic(err)
 		}
@@ -158,6 +170,40 @@ func TestStart(t *testing.T) { //nolint:cyclop
 				{
 					Name:        "local-graphql-query",
 					Description: local.ToolGraphqlQueryInstructions,
+					InputSchema: protocol.InputSchema{
+						Type: "object",
+						Properties: map[string]*protocol.Property{
+							"query": {
+								Type:        "string",
+								Description: "graphql query to perform",
+							},
+							"role": {
+								Type:        "string",
+								Description: "role to use when executing queries. Default to user but make sure the user is aware. Keep in mind the schema depends on the role so if you retrieved the schema for a different role previously retrieve it for this role beforehand as it might differ", //nolint:lll
+							},
+							"variables": {
+								Type:        "string",
+								Description: "variables to use in the query",
+							},
+						},
+						Required: []string{"query", "role"},
+					},
+				},
+				{
+					Name:        "project-get-graphql-schema",
+					Description: project.ToolGetGraphqlSchemaInstructions,
+					InputSchema: protocol.InputSchema{
+						Type: "object",
+						Properties: map[string]*protocol.Property{"role": {
+							Type:        "string",
+							Description: "role to use when executing queries. Default to user but make sure the user is aware",
+						}},
+						Required: []string{"role"},
+					},
+				},
+				{
+					Name:        "project-graphql-query",
+					Description: project.ToolGraphqlQueryInstructions,
 					InputSchema: protocol.InputSchema{
 						Type: "object",
 						Properties: map[string]*protocol.Property{

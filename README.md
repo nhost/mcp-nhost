@@ -23,11 +23,33 @@ The following tools are currently exposed through the MCP interface:
    - Retrieves the GraphQL schema for local Nhost development projects
    - Provides access to project-specific queries and mutations
    - Helps understand available operations for local development helping generating code
+   - Uses "user" role unless specified otherwise
 
 4. **local_graphql_query**
    - Executes GraphQL queries against local Nhost development projects
    - Enables testing and development of project-specific operations
    - Supports both queries and mutations for local development
+   - Uses "user" role unless specified otherwise
+
+5. **local_config_server_schema**
+   - Retrieves the GraphQL schema for the local config server
+   - Helps understand available configuration options
+
+6. **local_config_server_query**
+   - Executes GraphQL queries against the local config server
+   - Enables querying and modifying local project configuration
+   - Changes require running 'nhost up' to take effect
+
+7. **project_get_graphql_schema**
+   - Retrieves the GraphQL schema for Nhost Cloud projects
+   - Provides access to project-specific queries and mutations
+   - Uses "user" role unless specified otherwise
+
+8. **project_graphql_query**
+   - Executes GraphQL queries against Nhost Cloud projects
+   - Enables interaction with live project data
+   - Supports both queries and mutations (need to be allowed)
+   - Uses "user" role unless specified otherwise   
 
 ## Screenshots and Examples
 
@@ -67,7 +89,7 @@ In order to use mcp-nhost, you need to create a Personal Access Token (PAT) in y
 
 ### Configuring clients
 
-The examples below enable mutations against the cloud and your projects via the flags `--with-cloud-mutations` and `--with-project-mutations`. If you want to disable these, you can remove the flags from the snippets below.
+The examples below enable all features which includes managing cloud projects, local projects, and executing queries and mutations. You can choose to enable only the features you need. Please, refer to the CLI usage section for more details on how to disable specific features or filter queries and mutations.
 
 #### Cursor
 
@@ -81,7 +103,12 @@ The examples below enable mutations against the cloud and your projects via the 
       "command": "/usr/local/bin/mcp-nhost",
       "args": [
         "start",
-        "--with-cloud-mutations"
+        "--with-cloud-mutations",
+        "--project-subdomain=<your-project-subdomain>",
+        "--project-region=<your-project-region>",
+        "--project-admin-secret=<your-project-admin-secret>",
+        "--project-allow-queries=*",
+        "--project-allow-mutations=*"
       ],
       "env": {
         "NHOST_PAT": "<here-goes-your-pat>"
@@ -89,18 +116,28 @@ The examples below enable mutations against the cloud and your projects via the 
     }
 ```
 
+## CLI Usage
+
+For help on how to use the CLI, you can run:
+
+```bash
+mcp-nhost --help
+```
+
+Or check [USAGE.md](docs/USAGE.md) for more details.
+
 ## Roadmap
 
 - ✅ Cloud platform: Basic project and organization management
 - ✅ Cloud projects: Configuration management
 - ✅ Local projects: Configuration management
 - ✅ Local projects: Graphql Schema awareness and query execution
-- 🔄 Local projects: Auth and Storage schema awareness
-- 🔄 Cloud projects: Schema awareness and query execution
-- 🔄 Cloud projects: Auth and Storage schema awareness
+- ✅ Cloud projects: Schema awareness and query execution
 - 🔄 Local projects: Create migrations
 - 🔄 Local projects: Manage permissions
-- 🔄 Documentation: integrate or document use of mintlify's generated mcp server
+- 🔄 Documentation: integrate or document use of mintlify's mcp server
+- 🔄 Local projects: Auth and Storage schema awareness (maybe via mintlify?)
+- 🔄 Cloud projects: Auth and Storage schema awareness (maybe via mintlify?)
 
 If you have any suggestions or feature requests, please feel free to open an issue for discussion.
 
