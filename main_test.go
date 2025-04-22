@@ -248,7 +248,7 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 						Type: "object",
 						Properties: map[string]any{
 							"projectSubdomain": map[string]any{
-								"description": "Project to get the GraphQL schema for. Must be one of asdasdasdasdasd, qweqweqweqweqwe",
+								"description": "Project to get the GraphQL schema for. Must be one of asdasdasdasdasd, qweqweqweqweqwe, otherwise you don't have access to it. You can use cloud-* tools to resolve subdomains and map them to names",
 								"type":        "string",
 							},
 							"role": map[string]any{
@@ -277,7 +277,7 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 								"type":        "string",
 							},
 							"projectSubdomain": map[string]any{
-								"description": "Project to get the GraphQL schema for. Must be one of asdasdasdasdasd, qweqweqweqweqwe",
+								"description": "Project to get the GraphQL schema for. Must be one of asdasdasdasdasd, qweqweqweqweqwe, otherwise you don't have access to it. You can use cloud-* tools to resolve subdomains and map them to names",
 								"type":        "string",
 							},
 							"role": map[string]any{
