@@ -70,3 +70,12 @@ func WithRole(
 		return nil
 	}
 }
+
+func WithUserID(
+	userID string,
+) func(ctx context.Context, req *http.Request) error {
+	return func(_ context.Context, req *http.Request) error {
+		req.Header.Add("X-Hasura-User-Id", userID)
+		return nil
+	}
+}

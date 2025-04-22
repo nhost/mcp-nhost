@@ -101,3 +101,18 @@ func ProjectFromParams(params map[string]any) (string, error) {
 
 	return project, nil
 }
+
+func FromParams[T any](params map[string]any, name string) (T, error) { //nolint:ireturn
+	var res T
+	p, ok := params[name]
+	if ok {
+		switch r := p.(type) {
+		case T:
+			res = r
+		default:
+			return res, fmt.Errorf("%w: project must be a %T", ErrInvalidRequestBody, res)
+		}
+	}
+
+	return res, nil
+}
