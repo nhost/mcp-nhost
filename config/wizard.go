@@ -16,11 +16,11 @@ func RunWizard() (*Config, error) {
 	fmt.Println()
 
 	cloudConfig := wizardCloud(reader)
-	fmt.Println("")
+	fmt.Println()
 	localConfig := wizardLocal(reader)
-	fmt.Println("")
+	fmt.Println()
 	projects := wizardProject(reader)
-	fmt.Println("")
+	fmt.Println()
 
 	return &Config{
 		Cloud:    cloudConfig,
@@ -29,11 +29,14 @@ func RunWizard() (*Config, error) {
 	}, nil
 }
 
-//nolint:forbidigo,lll
+//nolint:forbidigo
 func wizardCloud(reader *bufio.Reader) *Cloud {
-	fmt.Println("1. Access to the Nhost Cloud platform allows LLMs to access your Nhost projects and organizations configuration. It is useful to view your projects, configure them and to perform other cloud operations you may normally do via the dashboard.")
-	if promptYesNo(reader, "- Do you want to enable access to Nhost Cloud?") {
-		pat := promptString(reader, "* Enter your Personal Access Token (PAT) from https://app.nhost.io/account:")
+	fmt.Println("1. Nhost Cloud Access")
+	fmt.Println("   This allows LLMs to manage your Nhost projects and organizations.")
+	fmt.Println("   You can view and configure projects as you would in the dashboard.")
+
+	if promptYesNo(reader, "Enable Nhost Cloud access?") {
+		pat := promptString(reader, "Enter Personal Access Token (from https://app.nhost.io/account):")
 		return &Cloud{
 			PAT:             pat,
 			EnableMutations: true,
@@ -43,12 +46,18 @@ func wizardCloud(reader *bufio.Reader) *Cloud {
 	return nil
 }
 
-//nolint:forbidigo,lll
+//nolint:forbidigo
 func wizardLocal(reader *bufio.Reader) *Local {
-	fmt.Println("2. Access to local development allows LLMs to access your Nhost local development environment allowing them to view and manipulate your project configuration and to access your local GraphQL API. This can give LLMs context to generate code that interacts with your local Nhost project.")
+	fmt.Println("2. Local Development Access")
+	fmt.Println("   This allows LLMs to interact with your local Nhost environment,")
+	fmt.Println("   including project configuration and GraphQL API access.")
+	fmt.Println("   This gives LLMs context to generate code to interact with your Nhost project.")
 
-	if promptYesNo(reader, "- Do you want to enable access to local development?") {
-		adminSecret := promptString(reader, "* Enter your Admin Secret for local development (typically nhost-admin-secret):")
+	if promptYesNo(reader, "Enable local development access?") {
+		adminSecret := promptString(reader, "Enter Admin Secret (default: nhost-admin-secret):")
+		if adminSecret == "" {
+			adminSecret = "nhost-admin-secret" //nolint:gosec
+		}
 
 		return &Local{
 			AdminSecret:     adminSecret,
@@ -60,11 +69,16 @@ func wizardLocal(reader *bufio.Reader) *Local {
 	return nil
 }
 
-//nolint:forbidigo,lll
+//nolint:forbidigo
 func wizardProject(reader *bufio.Reader) []Project {
 	projects := make([]Project, 0)
-	fmt.Println("3. Access to specific projects allows LLMs to access your Nhost projects' GraphQL API. This is useful to query and manipulate your projects' data. You can restrict which queries and mutations are allowed to be performed on each project. Visit the documentation for more information about this.")
-	if promptYesNo(reader, "- Do you want to configure access to specific projects?") {
+	fmt.Println("3. Project-Specific Access")
+	fmt.Println("   Configure LLM access to your projects' GraphQL APIs.")
+	fmt.Println("   This allows using agents to query and analyze your data and even to add new data")
+	fmt.Println("   You can control which queries and mutations are allowed per project. See the docs")
+	fmt.Println("   for more details on how to configure this.")
+
+	if promptYesNo(reader, "Configure project access?") {
 		for {
 			project := Project{
 				Subdomain:      "",
@@ -75,21 +89,21 @@ func wizardProject(reader *bufio.Reader) []Project {
 				AllowMutations: []string{"*"},
 			}
 
-			project.Subdomain = promptString(reader, "* Enter project subdomain:")
-			project.Region = promptString(reader, "* Enter project region:")
+			project.Subdomain = promptString(reader, "Project subdomain:")
+			project.Region = promptString(reader, "Project region:")
 
-			authType := promptChoice(reader, "Choose authentication method:", []string{"Admin Secret", "PAT"})
+			authType := promptChoice(reader, "Select authentication method:", []string{"Admin Secret", "PAT"})
 			if authType == "Admin Secret" {
-				adminSecret := promptString(reader, "Enter project Admin Secret:")
+				adminSecret := promptString(reader, "Project Admin Secret:")
 				project.AdminSecret = &adminSecret
 			} else {
-				pat := promptString(reader, "Enter project PAT:")
+				pat := promptString(reader, "Project PAT:")
 				project.PAT = &pat
 			}
 
 			projects = append(projects, project)
 
-			if !promptYesNo(reader, "Do you want to add another project?") {
+			if !promptYesNo(reader, "Add another project?") {
 				break
 			}
 		}

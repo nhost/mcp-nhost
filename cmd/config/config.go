@@ -19,17 +19,17 @@ const (
 func Command() *cli.Command {
 	return &cli.Command{ //nolint:exhaustruct
 		Name:  "config",
-		Usage: "Writes a sample config file",
+		Usage: "Generate and save configuration file",
 		Flags: []cli.Flag{
 			&cli.StringFlag{ //nolint:exhaustruct
 				Name:    flagConfigFile,
-				Usage:   "Path to the config file",
+				Usage:   "Configuration file path",
 				Value:   config.GetConfigPath(),
 				Sources: cli.EnvVars("CONFIG_FILE"),
 			},
 			&cli.BoolFlag{ //nolint:exhaustruct
 				Name:    flagConfirm,
-				Usage:   "Confirm writing the config file",
+				Usage:   "Skip confirmation prompt",
 				Value:   false,
 				Sources: cli.EnvVars("CONFIRM"),
 			},
@@ -50,13 +50,14 @@ func action(_ context.Context, cmd *cli.Command) error {
 		return cli.Exit(fmt.Sprintf("failed to marshal config: %s", err), 1)
 	}
 
-	fmt.Println("Generated config file:")
+	fmt.Println("Configuration Preview:")
+	fmt.Println("---------------------")
 	fmt.Println(string(tomlData))
-	fmt.Println("")
+	fmt.Println()
 
 	filePath := cmd.String(flagConfigFile)
-	fmt.Printf("Now I will write this configuration to the file %s\n", filePath)
-	fmt.Println("Proceed? (y/n)")
+	fmt.Printf("Save configuration to %s?\n", filePath)
+	fmt.Print("Proceed? (y/N): ")
 
 	var confirm string
 	if _, err := fmt.Scanln(&confirm); err != nil {
@@ -64,7 +65,8 @@ func action(_ context.Context, cmd *cli.Command) error {
 	}
 
 	if confirm != "y" && confirm != "Y" {
-		fmt.Println("Aborting...")
+		fmt.Println("Operation cancelled.")
+		return nil
 	}
 
 	dir := filepath.Dir(filePath)
@@ -81,7 +83,8 @@ func action(_ context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 
-	fmt.Println("Done! I hope you enjoy using this tool")
-	fmt.Println("Please, note that the wizard wasn't exhaustive and you might want to review the documentation to see all the options available. Specially if you want to be more granular on the accesses given to LLMs.")
+	fmt.Println("\nConfiguration saved successfully!")
+	fmt.Println("Note: Review the documentation for additional configuration options,")
+	fmt.Println("      especially for fine-tuning LLM access permissions.")
 	return nil
 }
