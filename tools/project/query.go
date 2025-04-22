@@ -78,20 +78,20 @@ func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer, projects string
 	mcpServer.AddTool(queryTool, t.handleGraphqlQuery)
 }
 
-func (t *Tool) handleGraphqlQueryArguments(
-	arguments map[string]any,
+func (t *Tool) handleGraphqlQueryArgs(
+	args map[string]any,
 ) (tools.GraphqlQueryWithRoleRequest, string, string, error) {
-	request, err := tools.QueryRequestWithRoleFromParams(arguments)
+	request, err := tools.QueryRequestWithRoleFromParams(args)
 	if err != nil {
 		return request, "", "", err //nolint:wrapcheck
 	}
 
-	projectSubdomain, err := tools.ProjectFromParams(arguments)
+	projectSubdomain, err := tools.ProjectFromParams(args)
 	if err != nil {
 		return request, "", "", err //nolint:wrapcheck
 	}
 
-	userID, err := tools.FromParams[string](arguments, "userId")
+	userID, err := tools.FromParams[string](args, "userId")
 	if err != nil {
 		return request, "", "", err
 	}
@@ -102,7 +102,7 @@ func (t *Tool) handleGraphqlQueryArguments(
 func (t *Tool) handleGraphqlQuery(
 	ctx context.Context, req mcp.CallToolRequest,
 ) (*mcp.CallToolResult, error) {
-	request, projectSubdomain, userID, err := t.handleGraphqlQueryArguments(req.Params.Arguments)
+	request, projectSubdomain, userID, err := t.handleGraphqlQueryArgs(req.Params.Arguments)
 	if err != nil {
 		return nil, err
 	}

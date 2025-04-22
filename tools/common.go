@@ -110,7 +110,7 @@ func FromParams[T any](params map[string]any, name string) (T, error) { //nolint
 		case T:
 			res = r
 		default:
-			return res, fmt.Errorf("%w: project must be a %T", ErrInvalidRequestBody, res)
+			return res, fmt.Errorf("%w: %s must be a %T", ErrInvalidRequestBody, name, res)
 		}
 	}
 
