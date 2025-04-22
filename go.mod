@@ -10,6 +10,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.1.1
 	github.com/urfave/cli-docs/v3 v3.0.0-alpha6
 	github.com/urfave/cli/v3 v3.1.1
+	github.com/vektah/gqlparser/v2 v2.5.25
 	golang.org/x/mod v0.24.0
 )
 

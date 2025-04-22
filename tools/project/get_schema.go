@@ -85,6 +85,8 @@ func (t *Tool) handleGetGraphqlSchema(
 		graphql.IntrospectionQuery,
 		nil,
 		&introspection,
+		nil,
+		nil,
 		interceptors...,
 	); err != nil {
 		return nil, fmt.Errorf("failed to query GraphQL schema: %w", err)

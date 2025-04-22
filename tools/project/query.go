@@ -103,6 +103,8 @@ func (t *Tool) handleGraphqlQuery(
 		request.Query,
 		request.Variables,
 		&resp,
+		project.allowQueries,
+		project.allowMutations,
 		interceptors...,
 	); err != nil {
 		return nil, fmt.Errorf("failed to query graphql endpoint: %w", err)

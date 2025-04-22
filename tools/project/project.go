@@ -24,6 +24,13 @@ type Tool struct {
 	projects map[string]Project
 }
 
+func allowedQueries(allowQueries []string) []string {
+	if len(allowQueries) == 1 && allowQueries[0] == "*" {
+		return nil
+	}
+	return allowQueries
+}
+
 func NewTool(
 	projList []config.Project,
 ) (*Tool, error) {
@@ -51,8 +58,8 @@ func NewTool(
 			subdomain:       proj.Subdomain,
 			graphqlURL:      graphqlURL,
 			authInterceptor: interceptor,
-			allowQueries:    proj.AllowQueries,
-			allowMutations:  proj.AllowMutations,
+			allowQueries:    allowedQueries(proj.AllowQueries),
+			allowMutations:  allowedQueries(proj.AllowMutations),
 		}
 	}
 
