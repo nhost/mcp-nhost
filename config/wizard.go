@@ -36,7 +36,10 @@ func wizardCloud(reader *bufio.Reader) *Cloud {
 	fmt.Println("   You can view and configure projects as you would in the dashboard.")
 
 	if promptYesNo(reader, "Enable Nhost Cloud access?") {
-		pat := promptString(reader, "Enter Personal Access Token (from https://app.nhost.io/account):")
+		pat := promptString(
+			reader,
+			"Enter Personal Access Token (from https://app.nhost.io/account):",
+		)
 		return &Cloud{
 			PAT:             pat,
 			EnableMutations: true,
@@ -74,8 +77,12 @@ func wizardProject(reader *bufio.Reader) []Project {
 	projects := make([]Project, 0)
 	fmt.Println("3. Project-Specific Access")
 	fmt.Println("   Configure LLM access to your projects' GraphQL APIs.")
-	fmt.Println("   This allows using agents to query and analyze your data and even to add new data")
-	fmt.Println("   You can control which queries and mutations are allowed per project. See the docs")
+	fmt.Println(
+		"   This allows using agents to query and analyze your data and even to add new data",
+	)
+	fmt.Println(
+		"   You can control which queries and mutations are allowed per project. See the docs",
+	)
 	fmt.Println("   for more details on how to configure this.")
 
 	if promptYesNo(reader, "Configure project access?") {
@@ -92,7 +99,11 @@ func wizardProject(reader *bufio.Reader) []Project {
 			project.Subdomain = promptString(reader, "Project subdomain:")
 			project.Region = promptString(reader, "Project region:")
 
-			authType := promptChoice(reader, "Select authentication method:", []string{"Admin Secret", "PAT"})
+			authType := promptChoice(
+				reader,
+				"Select authentication method:",
+				[]string{"Admin Secret", "PAT"},
+			)
 			if authType == "Admin Secret" {
 				adminSecret := promptString(reader, "Project Admin Secret:")
 				project.AdminSecret = &adminSecret

@@ -38,7 +38,7 @@ func Command() *cli.Command {
 	}
 }
 
-//nolint:forbidigo,lll
+//nolint:forbidigo
 func action(_ context.Context, cmd *cli.Command) error {
 	cfg, err := config.RunWizard()
 	if err != nil {
