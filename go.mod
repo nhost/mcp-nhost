@@ -7,6 +7,7 @@ require (
 	github.com/google/go-cmp v0.5.9
 	github.com/mark3labs/mcp-go v0.22.0
 	github.com/oapi-codegen/runtime v1.1.1
+	github.com/pelletier/go-toml/v2 v2.1.1
 	github.com/urfave/cli-docs/v3 v3.0.0-alpha6
 	github.com/urfave/cli/v3 v3.1.1
 	golang.org/x/mod v0.24.0

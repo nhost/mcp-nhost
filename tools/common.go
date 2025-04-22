@@ -82,3 +82,22 @@ func QueryRequestWithRoleFromParams(params map[string]any) (GraphqlQueryWithRole
 		Role:      role,
 	}, nil
 }
+
+func ProjectFromParams(params map[string]any) (string, error) {
+	var project string
+	p, ok := params["projectSubdomain"]
+	if ok {
+		switch r := p.(type) {
+		case string:
+			project = r
+		default:
+			return "", fmt.Errorf("%w: project must be a string", ErrInvalidRequestBody)
+		}
+	}
+
+	if project == "" {
+		return "", fmt.Errorf("%w: project is required", ErrInvalidRequestBody)
+	}
+
+	return project, nil
+}

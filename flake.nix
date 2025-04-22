@@ -30,6 +30,7 @@
             "nhost/auth/openapi.yaml"
             "tools/cloud/schema.graphql"
             "tools/cloud/schema-with-mutations.graphql"
+            (inDirectory "testdata")
             (inDirectory "graphql/testdata")
             (inDirectory "vendor")
             isDirectory

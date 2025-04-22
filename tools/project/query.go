@@ -3,7 +3,9 @@ package project
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
@@ -18,8 +20,15 @@ const (
 	ToolGraphqlQueryInstructions = `Execute a GraphQL query against a Nhost project running in the Nhost Cloud. This tool is useful to query and mutate live data running on an online projec. If you run into issues executing queries, retrieve the schema using the project-get-graphql-schema tool in case the schema has changed. If you get an error indicating the query or mutation is not allowed the user may have disabled them in the server, don't retry and tell the user they need to enable them when starting mcp-nhost`
 )
 
-func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer) {
-	allowedMutations := t.allowMutations == nil || len(t.allowMutations) > 0
+func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer, projects string) {
+	allowedMutations := false
+
+	for _, proj := range t.projects {
+		if proj.allowMutations == nil || len(proj.allowMutations) > 0 {
+			allowedMutations = true
+			break
+		}
+	}
 
 	queryTool := mcp.NewTool(
 		ToolGraphqlQueryName,
@@ -49,6 +58,16 @@ func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer) {
 			),
 			mcp.Required(),
 		),
+		mcp.WithString(
+			"projectSubdomain",
+			mcp.Description(
+				fmt.Sprintf(
+					"Project to get the GraphQL schema for. Must be one of %s, otherwise you don't have access to it. You can use cloud-* tools to resolve subdomains and map them to names", //nolint:lll
+					projects,
+				),
+			),
+			mcp.Required(),
+		),
 	)
 	mcpServer.AddTool(queryTool, t.handleGraphqlQuery)
 }
@@ -61,15 +80,26 @@ func (t *Tool) handleGraphqlQuery(
 		return nil, err //nolint:wrapcheck
 	}
 
-	interceptors := append( //nolint:gocritic
-		t.interceptors,
+	projectSubdomain, err := tools.ProjectFromParams(req.Params.Arguments)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
+	}
+
+	project, ok := t.projects[projectSubdomain]
+	if !ok {
+		return nil,
+			errors.New("this project is not configured to be accessed by an LLM") //nolint:goerr113
+	}
+
+	interceptors := []func(ctx context.Context, req *http.Request) error{
+		project.authInterceptor,
 		auth.WithRole(request.Role),
-	)
+	}
 
 	var resp graphql.Response[any]
 	if err := graphql.Query(
 		ctx,
-		t.graphqlURL,
+		project.graphqlURL,
 		request.Query,
 		request.Variables,
 		&resp,

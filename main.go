@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/nhost/mcp-nhost/cmd/config"
 	"github.com/nhost/mcp-nhost/cmd/gen"
 	"github.com/nhost/mcp-nhost/cmd/start"
 	"github.com/nhost/mcp-nhost/cmd/upgrade"
@@ -38,6 +39,7 @@ func Command() *cli.Command {
 		Usage: "Nhost's Model Context Protocol (MCP) server",
 		Commands: []*cli.Command{
 			markdownDocs(),
+			config.Command(),
 			start.Command(),
 			gen.Command(),
 			upgrade.Command(),

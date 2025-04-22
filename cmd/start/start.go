@@ -2,11 +2,10 @@ package start
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/mark3labs/mcp-go/server"
+	"github.com/nhost/mcp-nhost/config"
 	"github.com/nhost/mcp-nhost/nhost/auth"
 	"github.com/nhost/mcp-nhost/tools/cloud"
 	"github.com/nhost/mcp-nhost/tools/local"
@@ -15,20 +14,10 @@ import (
 )
 
 const (
-	flagNhostAuthURL          = "nhost-auth-url"
-	flagNhostGraphqlURL       = "nhost-graphql-url"
-	flagNhostPAT              = "nhost-pat"
-	flagBind                  = "bind"
-	flagWithCloudMutations    = "with-cloud-mutations"
-	flagLocalAdminSecret      = "local-admin-secret" //nolint:gosec
-	flagLocalGraphqlURL       = "local-graphql-url"
-	flagLocalConfigServerURL  = "local-config-server-url"
-	flagProjectSubdomain      = "project-subdomain"
-	flagProjectRegion         = "project-region"
-	flagProjectAdminSecret    = "project-admin-secret"
-	flagProjectPAT            = "project-pat"
-	flagProjectAllowQueries   = "project-allow-queries"
-	flagProjectAllowMutations = "project-allow-mutations"
+	flagConfigFile      = "config-file"
+	flagNhostAuthURL    = "nhost-auth-url"
+	flagNhostGraphqlURL = "nhost-graphql-url"
+	flagBind            = "bind"
 )
 
 const (
@@ -53,11 +42,17 @@ const (
 	`
 )
 
-func Command() *cli.Command { //nolint:funlen
+func Command() *cli.Command {
 	return &cli.Command{ //nolint:exhaustruct
 		Name:  "start",
 		Usage: "Starts the MCP server",
 		Flags: []cli.Flag{
+			&cli.StringFlag{ //nolint:exhaustruct
+				Name:    flagConfigFile,
+				Usage:   "Path to the config file",
+				Value:   config.GetConfigPath(),
+				Sources: cli.EnvVars("CONFIG_FILE"),
+			},
 			&cli.StringFlag{ //nolint:exhaustruct
 				Name:     flagNhostAuthURL,
 				Usage:    "Nhost auth URL",
@@ -75,190 +70,127 @@ func Command() *cli.Command { //nolint:funlen
 				Sources:  cli.EnvVars("NHOST_GRAPHQL_URL"),
 			},
 			&cli.StringFlag{ //nolint:exhaustruct
-				Name:     flagNhostPAT,
-				Usage:    "Personal Access Token",
-				Required: true,
-				Category: "Cloud Platform",
-				Sources:  cli.EnvVars("NHOST_PAT"),
-			},
-			&cli.StringFlag{ //nolint:exhaustruct
 				Name:     flagBind,
 				Usage:    "Bind address in the form <host>:<port>. If omitted use stdio",
 				Required: false,
 				Category: "General",
 				Sources:  cli.EnvVars("BIND"),
 			},
-			&cli.BoolFlag{ //nolint:exhaustruct
-				Name:     flagWithCloudMutations,
-				Usage:    "Enable mutations against Nhost Cloud to allow operating on projects",
-				Value:    false,
-				Category: "Cloud Platform",
-				Sources:  cli.EnvVars("WITH_CLOUD_MUTATIONS"),
-			},
-			&cli.StringFlag{ //nolint:exhaustruct
-				Name:     flagLocalAdminSecret,
-				Usage:    "Admin secret for local projects",
-				Required: false,
-				Value:    "nhost-admin-secret",
-				Category: "Local Development",
-				Sources:  cli.EnvVars("LOCAL_ADMIN_SECRET"),
-			},
-			&cli.StringFlag{ //nolint:exhaustruct
-				Name:     flagLocalGraphqlURL,
-				Usage:    "GraphQL URL for local projects",
-				Required: false,
-				Value:    "https://local.graphql.local.nhost.run/v1",
-				Category: "Local Development",
-				Sources:  cli.EnvVars("LOCAL_GRAPHQL_URL"),
-			},
-			&cli.StringFlag{ //nolint:exhaustruct
-				Name:     flagLocalConfigServerURL,
-				Usage:    "Config server URL for local projects",
-				Required: false,
-				Value:    "https://local.dashboard.local.nhost.run/v1/configserver/graphql",
-				Category: "Local Development",
-				Sources:  cli.EnvVars("LOCAL_CONFIG_SERVER_URL"),
-			},
-			&cli.StringFlag{ //nolint:exhaustruct
-				Name:     flagProjectSubdomain,
-				Usage:    "Subdomain for the project",
-				Required: false,
-				Category: "Cloud Project",
-				Sources:  cli.EnvVars("PROJECT_SUBDOMAIN"),
-			},
-			&cli.StringFlag{ //nolint:exhaustruct
-				Name:     flagProjectRegion,
-				Usage:    "Region for the project",
-				Required: false,
-				Category: "Cloud Project",
-				Sources:  cli.EnvVars("PROJECT_REGION"),
-			},
-			&cli.StringFlag{ //nolint:exhaustruct
-				Name:     flagProjectAdminSecret,
-				Usage:    "Admin secret for the project",
-				Required: false,
-				Category: "Cloud Project",
-				Sources:  cli.EnvVars("PROJECT_ADMIN_SECRET"),
-			},
-			&cli.StringFlag{ //nolint:exhaustruct
-				Name:     flagProjectPAT,
-				Usage:    "Personal Access Token for the project",
-				Required: false,
-				Category: "Cloud Project",
-				Sources:  cli.EnvVars("PROJECT_PAT"),
-			},
-			&cli.StringSliceFlag{ //nolint:exhaustruct
-				Name:     flagProjectAllowQueries,
-				Usage:    "Allow queries for the project. If empty, no queries are allowed. Use * to allow all queries. Can be passed multiple times", //nolint:lll
-				Required: false,
-				Category: "Cloud Project",
-				Sources:  cli.EnvVars("PROJECT_ALLOW_QUERIES"),
-			},
-			&cli.StringSliceFlag{ //nolint:exhaustruct
-				Name:     flagProjectAllowMutations,
-				Usage:    "Allow mutations for the project. If empty, no mutations are allowed. Use * to allow all mutations. Can be passed multiple times", //nolint:lll
-				Required: false,
-				Category: "Cloud Project",
-				Sources:  cli.EnvVars("PROJECT_ALLOW_MUTATIONS"),
-			},
 		},
 		Action: action,
 	}
 }
 
-func registerProjectTool( //nolint:cyclop
-	mcpServer *server.MCPServer,
-	cmd *cli.Command,
-) error {
-	if cmd.String(flagProjectSubdomain) == "" {
-		return nil
-	}
-
-	if cmd.String(flagProjectRegion) == "" {
-		return errors.New( //nolint:goerr113
-			"project region is required when project subdomain is set",
-		)
-	}
-
-	graphqlURL := fmt.Sprintf(
-		"https://%s.graphql.%s.nhost.run/v1",
-		cmd.String(flagProjectSubdomain),
-		cmd.String(flagProjectRegion),
-	)
-
-	var interceptor func(ctx context.Context, req *http.Request) error
-	switch {
-	case cmd.String(flagProjectAdminSecret) != "":
-		interceptor = auth.WithAdminSecret(cmd.String(flagProjectAdminSecret))
-	case cmd.String(flagProjectPAT) != "":
-		authURL := fmt.Sprintf(
-			"https://%s.auth.%s.nhost.run/v1",
-			cmd.String(flagProjectSubdomain),
-			cmd.String(flagProjectRegion),
-		)
-		var err error
-		interceptor, err = auth.WithPAT(authURL, cmd.String(flagProjectPAT))
-		if err != nil {
-			return fmt.Errorf("failed to create PAT interceptor: %w", err)
-		}
-	}
-
-	allowQueries := cmd.StringSlice(flagProjectAllowQueries)
-	if len(allowQueries) == 1 && allowQueries[0] == "*" {
-		allowQueries = nil
-	}
-
-	allowMutations := cmd.StringSlice(flagProjectAllowMutations)
-	if len(allowMutations) == 1 && allowMutations[0] == "*" {
-		allowMutations = nil
-	}
-
-	projectTool := project.NewTool(graphqlURL, allowQueries, allowMutations, interceptor)
-
-	if err := projectTool.Register(mcpServer); err != nil {
-		return fmt.Errorf("failed to register project tool: %w", err)
-	}
-
-	return nil
-}
-
 func action(_ context.Context, cmd *cli.Command) error {
+	cfg, err := getConfig(cmd)
+	if err != nil {
+		return err
+	}
+
 	mcpServer := server.NewMCPServer(
 		cmd.Root().Name,
 		cmd.Root().Version,
 		server.WithInstructions(ServerInstructions),
 	)
 
-	interceptor, err := auth.WithPAT(
-		cmd.String(flagNhostAuthURL),
-		cmd.String(flagNhostPAT),
-	)
-	if err != nil {
-		return cli.Exit(err.Error(), 1)
+	if cfg.Cloud != nil {
+		if err := registerCloud(
+			mcpServer,
+			cfg,
+			cmd.String(flagNhostAuthURL),
+			cmd.String(flagNhostGraphqlURL),
+		); err != nil {
+			return cli.Exit(fmt.Sprintf("failed to register cloud tools: %s", err), 1)
+		}
 	}
 
-	cloudTool := cloud.NewTool(
-		cmd.String(flagNhostGraphqlURL), cmd.Bool(flagWithCloudMutations), interceptor,
-	)
-
-	if err := cloudTool.Register(mcpServer); err != nil {
-		return cli.Exit(fmt.Sprintf("failed to register Nhost's cloud tools: %v", err), 1)
+	if cfg.Local != nil {
+		if err := registerLocal(mcpServer, cfg); err != nil {
+			return cli.Exit(fmt.Sprintf("failed to register local tools: %s", err), 1)
+		}
 	}
 
-	localTool := local.NewTool(
-		cmd.String(flagLocalGraphqlURL),
-		cmd.String(flagLocalConfigServerURL),
-		auth.WithAdminSecret(cmd.String(flagLocalAdminSecret)),
-	)
-	if err := localTool.Register(mcpServer); err != nil {
-		return cli.Exit(fmt.Sprintf("failed to register local tools: %v", err), 1)
-	}
-
-	if err := registerProjectTool(mcpServer, cmd); err != nil {
-		return cli.Exit(fmt.Sprintf("failed to register project tools: %v", err), 1)
+	if len(cfg.Projects) > 0 {
+		if err := registerProjectTool(mcpServer, cfg); err != nil {
+			return cli.Exit(fmt.Sprintf("failed to register project tools: %s", err), 1)
+		}
 	}
 
 	return start(mcpServer, cmd.String(flagBind))
+}
+
+func getConfig(cmd *cli.Command) (*config.Config, error) {
+	configPath := cmd.String(flagConfigFile)
+	if configPath == "" {
+		return nil, cli.Exit("config file path is required", 1)
+	}
+
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		fmt.Println("Please, run `mcp-nhost config` to configure the service.") //nolint:forbidigo
+		return nil, cli.Exit("failed to load config file "+err.Error(), 1)
+	}
+
+	return cfg, nil
+}
+
+func registerCloud(
+	mcpServer *server.MCPServer,
+	cfg *config.Config,
+	authURL string,
+	graphqlURL string,
+) error {
+	interceptor, err := auth.WithPAT(
+		authURL,
+		cfg.Cloud.PAT,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create PAT interceptor: %w", err)
+	}
+
+	cloudTool := cloud.NewTool(
+		graphqlURL, cfg.Cloud.EnableMutations, interceptor,
+	)
+
+	if err := cloudTool.Register(mcpServer); err != nil {
+		return fmt.Errorf("failed to register tools: %w", err)
+	}
+
+	return nil
+}
+
+func registerLocal(
+	mcpServer *server.MCPServer,
+	cfg *config.Config,
+) error {
+	interceptor := auth.WithAdminSecret(cfg.Local.AdminSecret)
+
+	localTool := local.NewTool(
+		*cfg.Local.GraphqlURL,
+		*cfg.Local.ConfigServerURL,
+		interceptor,
+	)
+	if err := localTool.Register(mcpServer); err != nil {
+		return fmt.Errorf("failed to register tools: %w", err)
+	}
+
+	return nil
+}
+
+func registerProjectTool(
+	mcpServer *server.MCPServer,
+	cfg *config.Config,
+) error {
+	projectTool, err := project.NewTool(cfg.Projects)
+	if err != nil {
+		return fmt.Errorf("failed to initialize tool: %w", err)
+	}
+
+	if err := projectTool.Register(mcpServer); err != nil {
+		return fmt.Errorf("failed to register tool: %w", err)
+	}
+
+	return nil
 }
 
 func start(

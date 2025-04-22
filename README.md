@@ -49,12 +49,11 @@ The following tools are currently exposed through the MCP interface:
    - Executes GraphQL queries against Nhost Cloud projects
    - Enables interaction with live project data
    - Supports both queries and mutations (need to be allowed)
-   - Uses "user" role unless specified otherwise   
+   - Uses "user" role unless specified otherwise
 
 ## Screenshots and Examples
 
 You can find screenshots and examples of the current features and tools in the [screenshots](docs/screenshots.md) file.
-
 
 ## Installing
 
@@ -64,32 +63,11 @@ To install mcp-nhost, you can use the following command:
 sudo curl -L https://raw.githubusercontent.com/nhost/mcp-nhost/main/get.sh | bash
 ```
 
-## Upgrading
+## Configuring
 
-To upgrade mcp-nhost, you can use the following command:
+After installing mcp-nhost, you will need to configure it. You can do this by running the command `mcp-nhost config` in your terminal. See [CONFIG.md](docs/CONFIG.md) for more details.
 
-```bash
-sudo mcp-nhost upgrade --confirm
-```
-
-## Getting Started
-
-After installing mcp-nhost, you will need to do two things to get things up and running:
-
-1. Create a Personal Access Token (PAT) in your Nhost account.
-2. Configure your mcp-nhost client (i.e. Cursor, etc.)
-
-### Create a PAT
-
-In order to use mcp-nhost, you need to create a Personal Access Token (PAT) in your Nhost account. You can do this by following these steps:
-
-1. Go to https://app.nhost.io/account
-2. Scroll don to "Personal Access Tokens" and create a new token. Write down the token as you will need it later.
-3. Proceed to configure your mcp-nhost client (instructions for some below).
-
-### Configuring clients
-
-The examples below enable all features which includes managing cloud projects, local projects, and executing queries and mutations. You can choose to enable only the features you need. Please, refer to the CLI usage section for more details on how to disable specific features or filter queries and mutations.
+## Configuring clients
 
 #### Cursor
 
@@ -103,16 +81,7 @@ The examples below enable all features which includes managing cloud projects, l
       "command": "/usr/local/bin/mcp-nhost",
       "args": [
         "start",
-        "--with-cloud-mutations",
-        "--project-subdomain=<your-project-subdomain>",
-        "--project-region=<your-project-region>",
-        "--project-admin-secret=<your-project-admin-secret>",
-        "--project-allow-queries=*",
-        "--project-allow-mutations=*"
       ],
-      "env": {
-        "NHOST_PAT": "<here-goes-your-pat>"
-      }
     }
 ```
 
