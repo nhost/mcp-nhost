@@ -52,13 +52,6 @@ func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer, projects string
 			mcp.Description("variables to use in the query"),
 		),
 		mcp.WithString(
-			"role",
-			mcp.Description(
-				"role to use when executing queries. Default to user but make sure the user is aware. Keep in mind the schema depends on the role so if you retrieved the schema for a different role previously retrieve it for this role beforehand as it might differ", //nolint:lll
-			),
-			mcp.Required(),
-		),
-		mcp.WithString(
 			"projectSubdomain",
 			mcp.Description(
 				fmt.Sprintf(
@@ -68,21 +61,50 @@ func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer, projects string
 			),
 			mcp.Required(),
 		),
+		mcp.WithString(
+			"role",
+			mcp.Description(
+				"role to use when executing queries. Default to user but make sure the user is aware. Keep in mind the schema depends on the role so if you retrieved the schema for a different role previously retrieve it for this role beforehand as it might differ", //nolint:lll
+			),
+			mcp.Required(),
+		),
+		mcp.WithString(
+			"userId",
+			mcp.Description(
+				"Overrides X-Hasura-User-Id in the GraphQL query/mutation. Credentials must allow it (i.e. admin secret must be in use)", //nolint:lll
+			),
+		),
 	)
 	mcpServer.AddTool(queryTool, t.handleGraphqlQuery)
+}
+
+func (t *Tool) handleGraphqlQueryArgs(
+	args map[string]any,
+) (tools.GraphqlQueryWithRoleRequest, string, string, error) {
+	request, err := tools.QueryRequestWithRoleFromParams(args)
+	if err != nil {
+		return request, "", "", err //nolint:wrapcheck
+	}
+
+	projectSubdomain, err := tools.ProjectFromParams(args)
+	if err != nil {
+		return request, "", "", err //nolint:wrapcheck
+	}
+
+	userID, err := tools.FromParams[string](args, "userId")
+	if err != nil {
+		return request, "", "", err
+	}
+
+	return request, projectSubdomain, userID, nil
 }
 
 func (t *Tool) handleGraphqlQuery(
 	ctx context.Context, req mcp.CallToolRequest,
 ) (*mcp.CallToolResult, error) {
-	request, err := tools.QueryRequestWithRoleFromParams(req.Params.Arguments)
+	request, projectSubdomain, userID, err := t.handleGraphqlQueryArgs(req.Params.Arguments)
 	if err != nil {
-		return nil, err //nolint:wrapcheck
-	}
-
-	projectSubdomain, err := tools.ProjectFromParams(req.Params.Arguments)
-	if err != nil {
-		return nil, err //nolint:wrapcheck
+		return nil, err
 	}
 
 	project, ok := t.projects[projectSubdomain]
@@ -94,6 +116,10 @@ func (t *Tool) handleGraphqlQuery(
 	interceptors := []func(ctx context.Context, req *http.Request) error{
 		project.authInterceptor,
 		auth.WithRole(request.Role),
+	}
+
+	if userID != "" {
+		interceptors = append(interceptors, auth.WithUserID(userID))
 	}
 
 	var resp graphql.Response[any]

@@ -284,12 +284,16 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 								"description": "role to use when executing queries. Default to user but make sure the user is aware. Keep in mind the schema depends on the role so if you retrieved the schema for a different role previously retrieve it for this role beforehand as it might differ",
 								"type":        "string",
 							},
+							"userId": map[string]any{
+								"description": string("Overrides X-Hasura-User-Id in the GraphQL query/mutation. Credentials must allow it (i.e. admin secret must be in use)"),
+								"type":        string("string"),
+							},
 							"variables": map[string]any{
 								"description": "variables to use in the query",
 								"type":        "string",
 							},
 						},
-						Required: []string{"query", "role", "projectSubdomain"},
+						Required: []string{"query", "projectSubdomain", "role"},
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Perform GraphQL Query on Nhost Project running on Nhost Cloud",
