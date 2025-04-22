@@ -68,6 +68,8 @@ func action(ctx context.Context, cmd *cli.Command) error {
 		graphql.IntrospectionQuery,
 		nil,
 		&introspection,
+		nil,
+		nil,
 		interceptor,
 	); err != nil {
 		return cli.Exit(err.Error(), 1)

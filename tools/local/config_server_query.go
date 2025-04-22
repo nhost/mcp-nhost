@@ -58,6 +58,8 @@ func (t *Tool) handleConfigServerQuery(
 		request.Query,
 		request.Variables,
 		&resp,
+		nil,
+		nil,
 		t.interceptors...,
 	); err != nil {
 		return nil, fmt.Errorf("failed to query graphql endpoint: %w", err)

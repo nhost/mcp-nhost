@@ -110,6 +110,31 @@ Or check [USAGE.md](docs/USAGE.md) for more details.
 
 If you have any suggestions or feature requests, please feel free to open an issue for discussion.
 
+## Security and Privacy
+
+### Enhanced Protection Layer
+
+The MCP server is designed with security at its core, providing an additional protection layer beyond your existing GraphQL permissions. Key security features include:
+
+- **Authentication enforcement** for all requests
+- **Permission and role respect** based on your existing authorization system and the credentials provided
+- **Query/mutation filtering** to further restrict allowed operations
+
+### Granular Access Control
+
+One of the MCP server's key security advantages is the ability to specify exactly which operations can pass through, even for authenticated users:
+
+```toml
+[[projects]]
+subdomain = "my-blog"
+region = "eu-central-1"
+pat = "nhp_project_specific_pat"
+allow_queries = ["getBlogs", "getCommends"]
+allow_mutations = ["insertBlog", "insertComment"]
+```
+
+With the configuration above, an LLM will be able to only execute the queries and mutations above on behalf of a user even if the user has broader permissions in the Nhost project.
+
 ## Contributing
 
 We welcome contributions to mcp-nhost! If you have suggestions, bug reports, or feature requests, please open an issue or submit a pull request.

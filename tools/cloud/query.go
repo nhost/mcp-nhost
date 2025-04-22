@@ -52,6 +52,11 @@ func (t *Tool) handleGraphqlQuery(
 		return nil, err //nolint:wrapcheck
 	}
 
+	allowedMutations := []string{}
+	if t.withMutations {
+		allowedMutations = nil
+	}
+
 	var resp graphql.Response[any]
 	if err := graphql.Query(
 		ctx,
@@ -59,6 +64,8 @@ func (t *Tool) handleGraphqlQuery(
 		request.Query,
 		request.Variables,
 		&resp,
+		nil,
+		allowedMutations,
 		t.interceptors...,
 	); err != nil {
 		return nil, fmt.Errorf("failed to query graphql endpoint: %w", err)
