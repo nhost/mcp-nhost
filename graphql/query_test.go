@@ -128,7 +128,11 @@ func TestCheckAllowedGraphqlQuery(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := graphql.CheckAllowedGraphqlQuery(tc.allowedQueries, tc.allowedMutations, tc.query)
+			err := graphql.CheckAllowedGraphqlQuery(
+				tc.allowedQueries,
+				tc.allowedMutations,
+				tc.query,
+			)
 			if !errors.Is(err, tc.expectedError) {
 				t.Errorf("expected error %v, got %v", tc.expectedError, err)
 			}
