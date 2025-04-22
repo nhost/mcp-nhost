@@ -32,20 +32,14 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 				"main",
 				"start",
 				"--bind=:9000",
-				"--nhost-pat=asdasd",
-				"--with-cloud-mutations",
-				"--project-subdomain=fake-subdomain",
-				"--project-region=fake-region",
-				"--project-admin-secret=fake-admin-secret",
-				"--project-allow-queries=*",
-				"--project-allow-mutations=*",
+				"--config-file=testdata/sample.toml",
 			},
 		); err != nil {
 			panic(err)
 		}
 	}()
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(100 * time.Millisecond)
 
 	transportClient, err := transport.NewSSE("http://localhost:9000/sse")
 	if err != nil {
@@ -253,12 +247,16 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					InputSchema: mcp.ToolInputSchema{
 						Type: "object",
 						Properties: map[string]any{
+							"projectSubdomain": map[string]any{
+								"description": "Project to get the GraphQL schema for. Must be one of asdasdasdasdasd, qweqweqweqweqwe",
+								"type":        "string",
+							},
 							"role": map[string]any{
 								"description": "role to use when executing queries. Default to user but make sure the user is aware",
 								"type":        "string",
 							},
 						},
-						Required: []string{"role"},
+						Required: []string{"role", "projectSubdomain"},
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Get GraphQL Schema for Nhost Project running on Nhost Cloud",
@@ -278,6 +276,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 								"description": "graphql query to perform",
 								"type":        "string",
 							},
+							"projectSubdomain": map[string]any{
+								"description": "Project to get the GraphQL schema for. Must be one of asdasdasdasdasd, qweqweqweqweqwe",
+								"type":        "string",
+							},
 							"role": map[string]any{
 								"description": "role to use when executing queries. Default to user but make sure the user is aware. Keep in mind the schema depends on the role so if you retrieved the schema for a different role previously retrieve it for this role beforehand as it might differ",
 								"type":        "string",
@@ -287,7 +289,7 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 								"type":        "string",
 							},
 						},
-						Required: []string{"query", "role"},
+						Required: []string{"query", "role", "projectSubdomain"},
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Perform GraphQL Query on Nhost Project running on Nhost Cloud",

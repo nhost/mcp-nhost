@@ -49,7 +49,7 @@ The following tools are currently exposed through the MCP interface:
    - Executes GraphQL queries against Nhost Cloud projects
    - Enables interaction with live project data
    - Supports both queries and mutations (need to be allowed)
-   - Uses "user" role unless specified otherwise   
+   - Uses "user" role unless specified otherwise
 
 ## Screenshots and Examples
 
@@ -103,16 +103,7 @@ The examples below enable all features which includes managing cloud projects, l
       "command": "/usr/local/bin/mcp-nhost",
       "args": [
         "start",
-        "--with-cloud-mutations",
-        "--project-subdomain=<your-project-subdomain>",
-        "--project-region=<your-project-region>",
-        "--project-admin-secret=<your-project-admin-secret>",
-        "--project-allow-queries=*",
-        "--project-allow-mutations=*"
       ],
-      "env": {
-        "NHOST_PAT": "<here-goes-your-pat>"
-      }
     }
 ```
 

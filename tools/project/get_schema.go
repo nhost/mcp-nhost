@@ -2,7 +2,9 @@ package project
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
@@ -16,7 +18,9 @@ const (
 	ToolGetGraphqlSchemaInstructions = `Get GraphQL schema for an Nhost project running in the Nhost Cloud.`
 )
 
-func (t *Tool) registerGetGraphqlSchemaTool(mcpServer *server.MCPServer) {
+var ErrNotFound = errors.New("not found")
+
+func (t *Tool) registerGetGraphqlSchemaTool(mcpServer *server.MCPServer, projects string) {
 	schemaTool := mcp.NewTool(
 		ToolGetGraphqlSchemaName,
 		mcp.WithDescription(ToolGetGraphqlSchemaInstructions),
@@ -36,6 +40,16 @@ func (t *Tool) registerGetGraphqlSchemaTool(mcpServer *server.MCPServer) {
 			),
 			mcp.Required(),
 		),
+		mcp.WithString(
+			"projectSubdomain",
+			mcp.Description(
+				fmt.Sprintf(
+					"Project to get the GraphQL schema for. Must be one of %s, otherwise you don't have access to it. You can use cloud-* tools to resolve subdomains and map them to names", //nolint:lll
+					projects,
+				),
+			),
+			mcp.Required(),
+		),
 	)
 	mcpServer.AddTool(schemaTool, t.handleGetGraphqlSchema)
 }
@@ -48,15 +62,26 @@ func (t *Tool) handleGetGraphqlSchema(
 		return nil, err //nolint:wrapcheck
 	}
 
-	interceptors := append( //nolint:gocritic
-		t.interceptors,
+	projectSubdomain, err := tools.ProjectFromParams(req.Params.Arguments)
+	if err != nil {
+		return nil, err //nolint:wrapcheck
+	}
+
+	project, ok := t.projects[projectSubdomain]
+	if !ok {
+		return nil,
+			errors.New("this project is not configured to be accessed by an LLM") //nolint:goerr113
+	}
+
+	interceptors := []func(ctx context.Context, req *http.Request) error{
+		project.authInterceptor,
 		auth.WithRole(role),
-	)
+	}
 
 	var introspection graphql.ResponseIntrospection
 	if err := graphql.Query(
 		ctx,
-		t.graphqlURL,
+		project.graphqlURL,
 		graphql.IntrospectionQuery,
 		nil,
 		&introspection,
