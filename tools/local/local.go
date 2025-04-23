@@ -30,6 +30,8 @@ func (t *Tool) Register(mcpServer *server.MCPServer) error {
 	t.registerGraphqlQuery(mcpServer)
 	t.registerGetConfigServerSchema(mcpServer)
 	t.registerConfigServerQuery(mcpServer)
+	t.registerGetGraphqlManagementSchema(mcpServer)
+	t.registerManageGraphql(mcpServer)
 
 	return nil
 }

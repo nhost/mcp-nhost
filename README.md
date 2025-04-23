@@ -102,8 +102,9 @@ Or check [USAGE.md](docs/USAGE.md) for more details.
 - ✅ Local projects: Configuration management
 - ✅ Local projects: Graphql Schema awareness and query execution
 - ✅ Cloud projects: Schema awareness and query execution
-- 🔄 Local projects: Create migrations
-- 🔄 Local projects: Manage permissions
+- ✅ Local projects: Create migrations
+- ✅ Local projects: Manage permissions and relationships
+- 🔄 Local projects: Manage more metadata
 - 🔄 Documentation: integrate or document use of mintlify's mcp server
 - 🔄 Local projects: Auth and Storage schema awareness (maybe via mintlify?)
 - 🔄 Cloud projects: Auth and Storage schema awareness (maybe via mintlify?)
