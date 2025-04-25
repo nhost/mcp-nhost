@@ -11,13 +11,14 @@ MCP-Nhost is designed to provide a unified interface for managing Nhost projects
 The following tools are currently exposed through the MCP interface:
 
 1. **cloud_get_graphql_schema**
-   - Provides the GraphQL schema for the Nhost Cloud
-   - Provides information about queries, mutations, and type definitions
+   - Provides the GraphQL schema for the Nhost Cloud platform
+   - Gives access to queries and mutations available for cloud management
 
 2. **cloud_graphql_query**
-   - Executes GraphQL queries and mutations against the Nhost Cloud
+   - Executes GraphQL queries and mutations against the Nhost Cloud platform
    - Enables project and organization management
-   - Allows querying and updating project's configuration
+   - Allows querying and updating project configurations
+   - Mutations require enabling them when starting the server
 
 3. **local_get_graphql_schema**
    - Retrieves the GraphQL schema for local Nhost development projects
@@ -31,25 +32,43 @@ The following tools are currently exposed through the MCP interface:
    - Supports both queries and mutations for local development
    - Uses "user" role unless specified otherwise
 
-5. **local_config_server_schema**
+5. **local_config_server_get_schema**
    - Retrieves the GraphQL schema for the local config server
-   - Helps understand available configuration options
+   - Helps understand available configuration options for local projects
 
 6. **local_config_server_query**
    - Executes GraphQL queries against the local config server
    - Enables querying and modifying local project configuration
    - Changes require running 'nhost up' to take effect
 
-7. **project_get_graphql_schema**
+7. **local_get_management_graphql_schema**
+   - Retrieves the GraphQL management schema for local projects
+   - Useful for understanding how to manage Hasura metadata, migrations, and permissions
+   - Provides insight into available management operations before using the management tool
+
+8. **local_manage_graphql**
+   - Interacts with GraphQL's management endpoints for local projects
+   - Manages Hasura metadata, migrations, permissions, and remote schemas
+   - Creates and applies database migrations
+   - Handles data and schema changes through proper migration workflows
+   - Manages roles and permissions
+
+9. **project_get_graphql_schema**
    - Retrieves the GraphQL schema for Nhost Cloud projects
    - Provides access to project-specific queries and mutations
    - Uses "user" role unless specified otherwise
 
-8. **project_graphql_query**
-   - Executes GraphQL queries against Nhost Cloud projects
-   - Enables interaction with live project data
-   - Supports both queries and mutations (need to be allowed)
-   - Uses "user" role unless specified otherwise
+10. **project_graphql_query**
+    - Executes GraphQL queries against Nhost Cloud projects
+    - Enables interaction with live project data
+    - Supports both queries and mutations (need to be allowed)
+    - Uses "user" role unless specified otherwise
+
+11. **search**
+    - Searches Nhost's official documentation
+    - Provides information about Nhost features, APIs, and guides
+    - Helps find relevant documentation for implementing features or solving issues
+    - Returns links to detailed documentation pages
 
 ## Screenshots and Examples
 
