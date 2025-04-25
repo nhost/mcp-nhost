@@ -8,6 +8,7 @@ import (
 	"github.com/nhost/mcp-nhost/config"
 	"github.com/nhost/mcp-nhost/nhost/auth"
 	"github.com/nhost/mcp-nhost/tools/cloud"
+	"github.com/nhost/mcp-nhost/tools/docs"
 	"github.com/nhost/mcp-nhost/tools/local"
 	"github.com/nhost/mcp-nhost/tools/project"
 	"github.com/urfave/cli/v3"
@@ -82,6 +83,7 @@ func Command() *cli.Command {
 }
 
 func action(_ context.Context, cmd *cli.Command) error {
+func action(ctx context.Context, cmd *cli.Command) error {
 	cfg, err := getConfig(cmd)
 	if err != nil {
 		return err
@@ -115,6 +117,12 @@ func action(_ context.Context, cmd *cli.Command) error {
 			return cli.Exit(fmt.Sprintf("failed to register project tools: %s", err), 1)
 		}
 	}
+
+	d, err := docs.NewTool(ctx)
+	if err != nil {
+		return cli.Exit(fmt.Sprintf("failed to initialize docs tools: %s", err), 1)
+	}
+	d.Register(mcpServer)
 
 	return start(mcpServer, cmd.String(flagBind))
 }

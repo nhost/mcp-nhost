@@ -95,6 +95,9 @@ paths:
                 - $ref: '#/components/schemas/PgDropRelationship'
                 - $ref: '#/components/schemas/PgSuggestRelationships'
                 - $ref: '#/components/schemas/ExportMetadata'
+                - $ref: '#/components/schemas/RemoteSchemaOperation'
+                - $ref: '#/components/schemas/RemoveRemoteSchemaOperation'
+                - $ref: '#/components/schemas/ReloadRemoteSchemaOperation'
       responses:
         '200':
           description: Operation executed successfully
@@ -962,3 +965,115 @@ components:
           type: object
           description: Complete metadata configuration
           additionalProperties: true
+
+    AddRemoteSchemaArgs:
+      type: object
+      required:
+        - name
+        - definition
+      properties:
+        name:
+          type: string
+          description: Name of the remote schema
+          example: my_remote_schema
+        definition:
+          type: object
+          required:
+            - url
+          properties:
+            url:
+              type: string
+              description: URL of the GraphQL server
+              example: https://my-graphql-service.com/graphql
+            headers:
+              type: array
+              description: Headers to be sent with the request
+              items:
+                type: object
+                required:
+                  - name
+                  - value
+                properties:
+                  name:
+                    type: string
+                    description: Name of the header
+                    example: Authorization
+                  value:
+                    type: string
+                    description: Value of the header or from env var
+                    example: Bearer ${AUTH_TOKEN}
+                  value_from_env:
+                    type: string
+                    description: Environment variable name to get the value from
+                    example: AUTH_TOKEN
+            timeout_seconds:
+              type: integer
+              description: Timeout in seconds
+              example: 60
+            forward_client_headers:
+              type: boolean
+              description: Forward client headers to the remote schema
+              default: false
+        comment:
+          type: string
+          description: Comment for the remote schema
+          example: External GraphQL service
+
+    RemoteSchemaOperation:
+      type: object
+      required:
+        - type
+        - args
+      properties:
+        type:
+          type: string
+          enum: [add_remote_schema]
+          description: Type of operation to add a remote schema
+        args:
+          $ref: '#/components/schemas/AddRemoteSchemaArgs'
+
+    RemoveRemoteSchemaArgs:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the remote schema to remove
+          example: my_remote_schema
+
+    RemoveRemoteSchemaOperation:
+      type: object
+      required:
+        - type
+        - args
+      properties:
+        type:
+          type: string
+          enum: [remove_remote_schema]
+          description: Type of operation to remove a remote schema
+        args:
+          $ref: '#/components/schemas/RemoveRemoteSchemaArgs'
+
+    ReloadRemoteSchemaArgs:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Name of the remote schema to reload
+          example: my_remote_schema
+
+    ReloadRemoteSchemaOperation:
+      type: object
+      required:
+        - type
+        - args
+      properties:
+        type:
+          type: string
+          enum: [reload_remote_schema]
+          description: Type of operation to reload a remote schema
+        args:
+          $ref: '#/components/schemas/ReloadRemoteSchemaArgs'

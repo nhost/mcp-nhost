@@ -10,6 +10,7 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
+	"github.com/nhost/mcp-nhost/tools"
 )
 
 const (
@@ -17,17 +18,39 @@ const (
 	ToolManageGraphqlInstructions = `
 		Query GraphQL's management endpoints on an Nhost development project running locally via
 		the Nhost CLI. This tool is useful to manage hasura metadata, migrations, permissions,
-		remote schemas, etc. Use this tool to manage the underlying database schema, specially if users
-		ask to modify the project's schema as that can't be done via the GraphQL API.
-		1. When ask to modify the schema:
-		   1. Get the schema from the database first for reference
-		   2. Always create database migrations using /apis/migrate endpoint
-		   3. Don't forget to provide a down migration
-		   4. Provide a pg_track_table in the same request if a new table is created
-		2. When creating foreign keys, either on new tables or existing ones, make sure you track the
-		   relationships
-		3. When managing permissions admin always has full access so you don't need to manage
-		   this particularrole
+		remote schemas, database migrations, etc. It also allows to interact with the underlying
+		database directly.
+
+		* Do not forget to use the base url in the endpoint.
+		* Before using this tool always describe in natural languate what you are about to do.
+
+		## Metadata changes
+
+		* When changing metadata via the /v1/metadata always perform a bulk request to avoid
+		  having to perform multiple requests
+		* The admin user always has full permissions to everything by default, no need to configure
+		  anything
+
+		## Schema changes
+
+		* Before performing any schema changes describe the changes in natural language
+		* Before performing any database schema changes, always check the current state of the database
+		* When performing database schema changes, always follow existing patterns in the database schema
+		* When making database schema changes, always do it via the /apis/migrate endpoint
+		* Always provide a down migration
+		* Always track new tables
+		* Always track new foreign keys as relationships
+		* Never modify the database schema directly via SQL commands, always use the /apis/migrate endpoint
+
+		## Roles
+
+		* Roles need to be added to the table auth.roles, if requested to add a new role for an
+		  application always do it via a migration
+
+		## Data changes
+
+		* Before adding/changing/modifying data confirm with the user if the change should be done
+		  using a migration via the /apis/migrate endpoint
 		`
 )
 
@@ -53,12 +76,6 @@ func (t *Tool) registerManageGraphql(mcpServer *server.MCPServer) {
 			"body",
 			mcp.Description("The body for the HTTP request"),
 			mcp.Required(),
-		),
-		mcp.WithString(
-			"method",
-			mcp.Description("The HTTP method to use"),
-			mcp.DefaultString("POST"),
-			mcp.Enum("GET", "POST", "PUT", "DELETE"),
 		),
 	)
 	mcpServer.AddTool(schemaTool, t.handleManageGraphql)
@@ -111,35 +128,33 @@ func genericQuery(
 
 func (t *Tool) handleManageGraphqlArguments(
 	arguments map[string]any,
-) (string, string, string, http.Header, error) {
-	endpoint, ok := arguments["endpoint"].(string)
-	if !ok {
-		return "", "", "", nil, fmt.Errorf("missing endpoint")
+) (string, string, http.Header, error) {
+	endpoint, err := tools.FromParams[string](arguments, "endpoint")
+	if err != nil {
+		return "", "", nil, fmt.Errorf("failed to parse endpoint: %w", err)
 	}
 
-	body, ok := arguments["body"].(string)
-	if !ok {
-		return "", "", "", nil, fmt.Errorf("missing body")
-	}
-
-	method, ok := arguments["method"].(string)
-	if !ok {
-		return "", "", "", nil, fmt.Errorf("missing method")
+	body, err := tools.FromParams[string](arguments, "body")
+	if err != nil {
+		return "", "", nil, fmt.Errorf("failed to parse body: %w", err)
 	}
 
 	headers := http.Header{}
 	headers.Add("Content-Type", "application/json")
 	headers.Add("Accept", "application/json")
 
-	return endpoint, body, method, headers, nil
+	return endpoint, body, headers, nil
 }
 
 func (t *Tool) handleManageGraphql(
 	ctx context.Context, req mcp.CallToolRequest,
 ) (*mcp.CallToolResult, error) {
-	endpoint, body, method, headers, err := t.handleManageGraphqlArguments(req.Params.Arguments)
+	endpoint, body, headers, err := t.handleManageGraphqlArguments(req.Params.Arguments)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse arguments: %w", err)
+	}
 
-	response, err := genericQuery(ctx, endpoint, body, method, headers, t.interceptors)
+	response, err := genericQuery(ctx, endpoint, body, http.MethodPost, headers, t.interceptors)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
