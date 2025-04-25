@@ -13,6 +13,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/nhost/mcp-nhost/cmd/start"
 	"github.com/nhost/mcp-nhost/tools/cloud"
+	"github.com/nhost/mcp-nhost/tools/docs"
 	"github.com/nhost/mcp-nhost/tools/local"
 	"github.com/nhost/mcp-nhost/tools/project"
 )
@@ -39,7 +40,7 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 		}
 	}()
 
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(time.Second)
 
 	transportClient, err := transport.NewSSE("http://localhost:9000/sse")
 	if err != nil {
@@ -301,6 +302,61 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 						DestructiveHint: true,
 						IdempotentHint:  false,
 						OpenWorldHint:   true,
+					},
+				},
+				{
+					Name:        "local-get-management-graphql-schema",
+					Description: local.ToolGetGraphqlManagementSchemaInstructions,
+					InputSchema: mcp.ToolInputSchema{Type: "object"},
+					Annotations: mcp.ToolAnnotation{
+						Title:          "Get GraphQL's Management Schema for Nhost Development Project",
+						ReadOnlyHint:   true,
+						IdempotentHint: true,
+						OpenWorldHint:  true,
+					},
+				},
+				{
+					Name:        "local-manage-graphql",
+					Description: local.ToolManageGraphqlInstructions,
+					InputSchema: mcp.ToolInputSchema{
+						Type: "object",
+						Properties: map[string]any{
+							"body": map[string]any{
+								"description": string("The body for the HTTP request"),
+								"type":        string("string"),
+							},
+							"endpoint": map[string]any{
+								"description": string("The GraphQL management endpoint to query. Use https://local.hasura.local.nhost.run as base URL"),
+								"type":        string("string"),
+							},
+						},
+						Required: []string{"endpoint", "body"},
+					},
+					Annotations: mcp.ToolAnnotation{
+						Title:           "Manage GraphQL's Metadata on an Nhost Development Project",
+						DestructiveHint: true,
+						IdempotentHint:  true,
+						OpenWorldHint:   true,
+					},
+				},
+				{
+					Name:        "search",
+					Description: docs.ToolSearchInstructions,
+					InputSchema: mcp.ToolInputSchema{
+						Type: "object",
+						Properties: map[string]any{
+							"query": map[string]any{
+								"description": string("The search query"),
+								"type":        string("string"),
+							},
+						},
+						Required: []string{"query"},
+					},
+					Annotations: mcp.ToolAnnotation{
+						Title:          "Search Nhost Docs",
+						ReadOnlyHint:   true,
+						IdempotentHint: true,
+						OpenWorldHint:  true,
 					},
 				},
 			},
