@@ -69,7 +69,9 @@ func (t *Tool) registerManageGraphql(mcpServer *server.MCPServer) {
 		),
 		mcp.WithString(
 			"endpoint",
-			mcp.Description("The GraphQL management endpoint to query. Use https://local.hasura.local.nhost.run as base URL"),
+			mcp.Description(
+				"The GraphQL management endpoint to query. Use https://local.hasura.local.nhost.run as base URL",
+			),
 			mcp.Required(),
 		),
 		mcp.WithString(

@@ -20,6 +20,31 @@ const (
 	AdminSecretScopes = "adminSecret.Scopes"
 )
 
+// Defines values for BulkRequestType.
+const (
+	Bulk BulkRequestType = "bulk"
+)
+
+// Defines values for BulkRunSqlOperationType.
+const (
+	BulkRunSqlOperationTypeRunSql BulkRunSqlOperationType = "run_sql"
+)
+
+// Defines values for CommandOkResponseResultType.
+const (
+	CommandOk CommandOkResponseResultType = "CommandOk"
+)
+
+// Defines values for ExportMetadataType.
+const (
+	ExportMetadataTypeExportMetadata ExportMetadataType = "export_metadata"
+)
+
+// Defines values for PgCreateArrayRelationshipType.
+const (
+	PgCreateArrayRelationshipTypePgCreateArrayRelationship PgCreateArrayRelationshipType = "pg_create_array_relationship"
+)
+
 // Defines values for PgCreateDeletePermissionType.
 const (
 	PgCreateDeletePermissionTypePgCreateDeletePermission PgCreateDeletePermissionType = "pg_create_delete_permission"
@@ -28,6 +53,11 @@ const (
 // Defines values for PgCreateInsertPermissionType.
 const (
 	PgCreateInsertPermissionTypePgCreateInsertPermission PgCreateInsertPermissionType = "pg_create_insert_permission"
+)
+
+// Defines values for PgCreateObjectRelationshipType.
+const (
+	PgCreateObjectRelationshipTypePgCreateObjectRelationship PgCreateObjectRelationshipType = "pg_create_object_relationship"
 )
 
 // Defines values for PgCreateSelectPermissionType.
@@ -50,6 +80,11 @@ const (
 	PgDropInsertPermissionTypePgDropInsertPermission PgDropInsertPermissionType = "pg_drop_insert_permission"
 )
 
+// Defines values for PgDropRelationshipType.
+const (
+	PgDropRelationshipTypePgDropRelationship PgDropRelationshipType = "pg_drop_relationship"
+)
+
 // Defines values for PgDropSelectPermissionType.
 const (
 	PgDropSelectPermissionTypePgDropSelectPermission PgDropSelectPermissionType = "pg_drop_select_permission"
@@ -58,6 +93,31 @@ const (
 // Defines values for PgDropUpdatePermissionType.
 const (
 	PgDropUpdatePermissionTypePgDropUpdatePermission PgDropUpdatePermissionType = "pg_drop_update_permission"
+)
+
+// Defines values for PgSuggestRelationshipsType.
+const (
+	PgSuggestRelationshipsTypePgSuggestRelationships PgSuggestRelationshipsType = "pg_suggest_relationships"
+)
+
+// Defines values for ReloadRemoteSchemaOperationType.
+const (
+	ReloadRemoteSchema ReloadRemoteSchemaOperationType = "reload_remote_schema"
+)
+
+// Defines values for RemoteSchemaOperationType.
+const (
+	AddRemoteSchema RemoteSchemaOperationType = "add_remote_schema"
+)
+
+// Defines values for RemoveRemoteSchemaOperationType.
+const (
+	RemoveRemoteSchema RemoveRemoteSchemaOperationType = "remove_remote_schema"
+)
+
+// Defines values for RunSqlRequestType.
+const (
+	RunSqlRequestTypeRunSql RunSqlRequestType = "run_sql"
 )
 
 // Defines values for SqlMigrationStepType.
@@ -70,11 +130,139 @@ const (
 	PgTrackTable TrackTableStepType = "pg_track_table"
 )
 
+// Defines values for TuplesOkResponseResultType.
+const (
+	TuplesOk TuplesOkResponseResultType = "TuplesOk"
+)
+
+// AddRemoteSchemaArgs defines model for AddRemoteSchemaArgs.
+type AddRemoteSchemaArgs struct {
+	// Comment Comment for the remote schema
+	Comment    *string `json:"comment,omitempty"`
+	Definition struct {
+		// ForwardClientHeaders Forward client headers to the remote schema
+		ForwardClientHeaders *bool `json:"forward_client_headers,omitempty"`
+
+		// Headers Headers to be sent with the request
+		Headers *[]struct {
+			// Name Name of the header
+			Name string `json:"name"`
+
+			// Value Value of the header or from env var
+			Value string `json:"value"`
+
+			// ValueFromEnv Environment variable name to get the value from
+			ValueFromEnv *string `json:"value_from_env,omitempty"`
+		} `json:"headers,omitempty"`
+
+		// TimeoutSeconds Timeout in seconds
+		TimeoutSeconds *int `json:"timeout_seconds,omitempty"`
+
+		// Url URL of the GraphQL server
+		Url string `json:"url"`
+	} `json:"definition"`
+
+	// Name Name of the remote schema
+	Name string `json:"name"`
+}
+
 // BoolExp Boolean expression for filtering rows
 type BoolExp = map[string]interface{}
 
+// BulkRequest defines model for BulkRequest.
+type BulkRequest struct {
+	// Args Array of operations to execute
+	Args []BulkRequest_Args_Item `json:"args"`
+
+	// Source The data source name
+	Source string `json:"source"`
+
+	// Type Type of operation to execute multiple operations in a batch
+	Type BulkRequestType `json:"type"`
+}
+
+// BulkRequest_Args_Item defines model for BulkRequest.args.Item.
+type BulkRequest_Args_Item struct {
+	union json.RawMessage
+}
+
+// BulkRequestType Type of operation to execute multiple operations in a batch
+type BulkRequestType string
+
+// BulkRunSqlOperation defines model for BulkRunSqlOperation.
+type BulkRunSqlOperation struct {
+	Args struct {
+		// Cascade Whether to cascade the operation
+		Cascade *bool `json:"cascade,omitempty"`
+
+		// ReadOnly Whether the operation is read-only
+		ReadOnly *bool `json:"read_only,omitempty"`
+
+		// Source The data source name
+		Source string `json:"source"`
+
+		// Sql SQL statement to execute
+		Sql string `json:"sql"`
+	} `json:"args"`
+
+	// Type Type of operation to execute SQL queries
+	Type BulkRunSqlOperationType `json:"type"`
+}
+
+// BulkRunSqlOperationType Type of operation to execute SQL queries
+type BulkRunSqlOperationType string
+
 // ColumnPresets Column preset values
 type ColumnPresets = map[string]interface{}
+
+// CommandOkResponse defines model for CommandOkResponse.
+type CommandOkResponse struct {
+	// Result Number of rows affected
+	Result int `json:"result"`
+
+	// ResultType Indicates a successful command that doesn't return rows
+	ResultType CommandOkResponseResultType `json:"result_type"`
+}
+
+// CommandOkResponseResultType Indicates a successful command that doesn't return rows
+type CommandOkResponseResultType string
+
+// CreateArrayRelationshipArgs defines model for CreateArrayRelationshipArgs.
+type CreateArrayRelationshipArgs struct {
+	// Comment Comment for the relationship
+	Comment *string `json:"comment,omitempty"`
+
+	// Name Name of the relationship
+	Name string `json:"name"`
+
+	// Source Name of the source database
+	Source string          `json:"source"`
+	Table  TableIdentifier `json:"table"`
+	Using  struct {
+		ForeignKeyConstraintOn struct {
+			// Column Column with the foreign key constraint
+			Column string          `json:"column"`
+			Table  TableIdentifier `json:"table"`
+		} `json:"foreign_key_constraint_on"`
+	} `json:"using"`
+}
+
+// CreateObjectRelationshipArgs defines model for CreateObjectRelationshipArgs.
+type CreateObjectRelationshipArgs struct {
+	// Comment Comment for the relationship
+	Comment *string `json:"comment,omitempty"`
+
+	// Name Name of the relationship
+	Name string `json:"name"`
+
+	// Source Name of the source database
+	Source string          `json:"source"`
+	Table  TableIdentifier `json:"table"`
+	Using  struct {
+		// ForeignKeyConstraintOn Column with the foreign key constraint
+		ForeignKeyConstraintOn string `json:"foreign_key_constraint_on"`
+	} `json:"using"`
+}
 
 // DeletePermissionArgs defines model for DeletePermissionArgs.
 type DeletePermissionArgs struct {
@@ -103,6 +291,16 @@ type DropPermissionArgs struct {
 	Table  TableIdentifier `json:"table"`
 }
 
+// DropRelationshipArgs defines model for DropRelationshipArgs.
+type DropRelationshipArgs struct {
+	// Relationship Name of the relationship to drop
+	Relationship string `json:"relationship"`
+
+	// Source Name of the source database
+	Source string          `json:"source"`
+	Table  TableIdentifier `json:"table"`
+}
+
 // ErrorResponse defines model for ErrorResponse.
 type ErrorResponse struct {
 	// Code Error code
@@ -111,6 +309,15 @@ type ErrorResponse struct {
 	// Message Detailed error message
 	Message *string `json:"message,omitempty"`
 }
+
+// ExportMetadata defines model for ExportMetadata.
+type ExportMetadata struct {
+	// Type Type of operation to export the current metadata from the server
+	Type ExportMetadataType `json:"type"`
+}
+
+// ExportMetadataType Type of operation to export the current metadata from the server
+type ExportMetadataType string
 
 // InsertPermissionArgs defines model for InsertPermissionArgs.
 type InsertPermissionArgs struct {
@@ -143,13 +350,13 @@ type MigrationRequest struct {
 	// Datasource The data source to use
 	Datasource string `json:"datasource"`
 
-	// Down Steps to execute to revert the migration
+	// Down Steps to execute to revert the migration. Always provide this when creating a migration that modifies the database
 	Down *[]MigrationStep `json:"down,omitempty"`
 
 	// Name Name of the migration
 	Name string `json:"name"`
 
-	// Up Steps to execute for the migration
+	// Up Steps to execute for the migration. Always provide a down migration as well when creating a migration that modifies the database
 	Up []MigrationStep `json:"up"`
 }
 
@@ -157,6 +364,17 @@ type MigrationRequest struct {
 type MigrationStep struct {
 	union json.RawMessage
 }
+
+// PgCreateArrayRelationship defines model for PgCreateArrayRelationship.
+type PgCreateArrayRelationship struct {
+	Args CreateArrayRelationshipArgs `json:"args"`
+
+	// Type Type of operation to create an array relationship
+	Type PgCreateArrayRelationshipType `json:"type"`
+}
+
+// PgCreateArrayRelationshipType Type of operation to create an array relationship
+type PgCreateArrayRelationshipType string
 
 // PgCreateDeletePermission defines model for PgCreateDeletePermission.
 type PgCreateDeletePermission struct {
@@ -179,6 +397,17 @@ type PgCreateInsertPermission struct {
 
 // PgCreateInsertPermissionType Type of operation
 type PgCreateInsertPermissionType string
+
+// PgCreateObjectRelationship defines model for PgCreateObjectRelationship.
+type PgCreateObjectRelationship struct {
+	Args CreateObjectRelationshipArgs `json:"args"`
+
+	// Type Type of operation to create an object relationship
+	Type PgCreateObjectRelationshipType `json:"type"`
+}
+
+// PgCreateObjectRelationshipType Type of operation to create an object relationship
+type PgCreateObjectRelationshipType string
 
 // PgCreateSelectPermission defines model for PgCreateSelectPermission.
 type PgCreateSelectPermission struct {
@@ -224,6 +453,17 @@ type PgDropInsertPermission struct {
 // PgDropInsertPermissionType Type of operation
 type PgDropInsertPermissionType string
 
+// PgDropRelationship defines model for PgDropRelationship.
+type PgDropRelationship struct {
+	Args DropRelationshipArgs `json:"args"`
+
+	// Type Type of operation to drop a relationship (both object and array)
+	Type PgDropRelationshipType `json:"type"`
+}
+
+// PgDropRelationshipType Type of operation to drop a relationship (both object and array)
+type PgDropRelationshipType string
+
 // PgDropSelectPermission defines model for PgDropSelectPermission.
 type PgDropSelectPermission struct {
 	Args DropPermissionArgs `json:"args"`
@@ -246,8 +486,135 @@ type PgDropUpdatePermission struct {
 // PgDropUpdatePermissionType Type of operation
 type PgDropUpdatePermissionType string
 
+// PgSuggestRelationships defines model for PgSuggestRelationships.
+type PgSuggestRelationships struct {
+	// Args Suggest relationships based on foreign key constraints
+	Args PgSuggestRelationshipsArgs `json:"args"`
+
+	// Type Type of operation to suggest relationships based on foreign key constraints
+	Type PgSuggestRelationshipsType `json:"type"`
+}
+
+// PgSuggestRelationshipsType Type of operation to suggest relationships based on foreign key constraints
+type PgSuggestRelationshipsType string
+
+// PgSuggestRelationshipsArgs Suggest relationships based on foreign key constraints
+type PgSuggestRelationshipsArgs struct {
+	// Schema Schema name to suggest relationships for (defaults to public)
+	Schema *string `json:"schema,omitempty"`
+
+	// Source Name of the source database
+	Source string `json:"source"`
+}
+
+// PostgresErrorResponse defines model for PostgresErrorResponse.
+type PostgresErrorResponse struct {
+	// Code Error code
+	Code string `json:"code"`
+
+	// Error Error message
+	Error    string `json:"error"`
+	Internal *struct {
+		// Arguments Arguments related to the error
+		Arguments *[]string `json:"arguments,omitempty"`
+		Error     *struct {
+			// Description Detailed error description
+			Description *string `json:"description"`
+
+			// ExecStatus Execution status
+			ExecStatus *string `json:"exec_status,omitempty"`
+
+			// Hint Hint for resolving the error
+			Hint *string `json:"hint"`
+
+			// Message Error message
+			Message *string `json:"message,omitempty"`
+
+			// StatusCode PostgreSQL error code
+			StatusCode *string `json:"status_code,omitempty"`
+		} `json:"error,omitempty"`
+
+		// Prepared Whether the statement was prepared
+		Prepared *bool `json:"prepared,omitempty"`
+
+		// Statement The SQL statement that caused the error
+		Statement *string `json:"statement,omitempty"`
+	} `json:"internal,omitempty"`
+
+	// Path Path to the error in the request
+	Path *string `json:"path,omitempty"`
+}
+
+// ReloadRemoteSchemaArgs defines model for ReloadRemoteSchemaArgs.
+type ReloadRemoteSchemaArgs struct {
+	// Name Name of the remote schema to reload
+	Name string `json:"name"`
+}
+
+// ReloadRemoteSchemaOperation defines model for ReloadRemoteSchemaOperation.
+type ReloadRemoteSchemaOperation struct {
+	Args ReloadRemoteSchemaArgs `json:"args"`
+
+	// Type Type of operation to reload a remote schema
+	Type ReloadRemoteSchemaOperationType `json:"type"`
+}
+
+// ReloadRemoteSchemaOperationType Type of operation to reload a remote schema
+type ReloadRemoteSchemaOperationType string
+
+// RemoteSchemaOperation defines model for RemoteSchemaOperation.
+type RemoteSchemaOperation struct {
+	Args AddRemoteSchemaArgs `json:"args"`
+
+	// Type Type of operation to add a remote schema
+	Type RemoteSchemaOperationType `json:"type"`
+}
+
+// RemoteSchemaOperationType Type of operation to add a remote schema
+type RemoteSchemaOperationType string
+
+// RemoveRemoteSchemaArgs defines model for RemoveRemoteSchemaArgs.
+type RemoveRemoteSchemaArgs struct {
+	// Name Name of the remote schema to remove
+	Name string `json:"name"`
+}
+
+// RemoveRemoteSchemaOperation defines model for RemoveRemoteSchemaOperation.
+type RemoveRemoteSchemaOperation struct {
+	Args RemoveRemoteSchemaArgs `json:"args"`
+
+	// Type Type of operation to remove a remote schema
+	Type RemoveRemoteSchemaOperationType `json:"type"`
+}
+
+// RemoveRemoteSchemaOperationType Type of operation to remove a remote schema
+type RemoveRemoteSchemaOperationType string
+
 // RolePermission Role name for the permission
 type RolePermission = string
+
+// RunSqlRequest defines model for RunSqlRequest.
+type RunSqlRequest struct {
+	Args struct {
+		// Cascade Whether to cascade the operation
+		Cascade *bool `json:"cascade,omitempty"`
+
+		// ReadOnly Whether the operation is read-only
+		ReadOnly *bool `json:"read_only,omitempty"`
+
+		// Source The data source name
+		Source string `json:"source"`
+
+		// Sql SQL statement to execute
+		Sql string `json:"sql"`
+	} `json:"args"`
+
+	// Type Type of operation to execute SQL queries
+	Type RunSqlRequestType `json:"type"`
+}
+
+// RunSqlRequestType Type of operation to execute SQL queries
+type RunSqlRequestType string
 
 // SelectPermissionArgs defines model for SelectPermissionArgs.
 type SelectPermissionArgs struct {
@@ -277,7 +644,7 @@ type SelectPermissionArgs struct {
 
 // SqlMigrationArgs defines model for SqlMigrationArgs.
 type SqlMigrationArgs struct {
-	// Cascade Whether to cascade the operation
+	// Cascade Whether to cascade the operation. Set to true when modifying the database schema
 	Cascade *bool `json:"cascade,omitempty"`
 
 	// ReadOnly Whether the operation is read-only
@@ -294,11 +661,11 @@ type SqlMigrationArgs struct {
 type SqlMigrationStep struct {
 	Args SqlMigrationArgs `json:"args"`
 
-	// Type Type of migration step
+	// Type Use to run SQL against the database behind the GraphQL service
 	Type SqlMigrationStepType `json:"type"`
 }
 
-// SqlMigrationStepType Type of migration step
+// SqlMigrationStepType Use to run SQL against the database behind the GraphQL service
 type SqlMigrationStepType string
 
 // SuccessResponse defines model for SuccessResponse.
@@ -333,12 +700,24 @@ type TrackTableArgs struct {
 type TrackTableStep struct {
 	Args TrackTableArgs `json:"args"`
 
-	// Type Type of migration step
+	// Type Use after creating a table with run_sql to track it. You can provide this in the same query as the run_sql step
 	Type TrackTableStepType `json:"type"`
 }
 
-// TrackTableStepType Type of migration step
+// TrackTableStepType Use after creating a table with run_sql to track it. You can provide this in the same query as the run_sql step
 type TrackTableStepType string
+
+// TuplesOkResponse defines model for TuplesOkResponse.
+type TuplesOkResponse struct {
+	// Result The result set, with the first row containing column names
+	Result [][]string `json:"result"`
+
+	// ResultType Indicates a successful query that returns rows
+	ResultType TuplesOkResponseResultType `json:"result_type"`
+}
+
+// TuplesOkResponseResultType Indicates a successful query that returns rows
+type TuplesOkResponseResultType string
 
 // UpdatePermissionArgs defines model for UpdatePermissionArgs.
 type UpdatePermissionArgs struct {
@@ -371,11 +750,55 @@ type MetadataOperationJSONBody struct {
 	union json.RawMessage
 }
 
+// ExecuteQueryJSONBody defines parameters for ExecuteQuery.
+type ExecuteQueryJSONBody struct {
+	union json.RawMessage
+}
+
 // ExecuteMigrationJSONRequestBody defines body for ExecuteMigration for application/json ContentType.
 type ExecuteMigrationJSONRequestBody = MigrationRequest
 
 // MetadataOperationJSONRequestBody defines body for MetadataOperation for application/json ContentType.
 type MetadataOperationJSONRequestBody MetadataOperationJSONBody
+
+// ExecuteQueryJSONRequestBody defines body for ExecuteQuery for application/json ContentType.
+type ExecuteQueryJSONRequestBody ExecuteQueryJSONBody
+
+// AsBulkRunSqlOperation returns the union data inside the BulkRequest_Args_Item as a BulkRunSqlOperation
+func (t BulkRequest_Args_Item) AsBulkRunSqlOperation() (BulkRunSqlOperation, error) {
+	var body BulkRunSqlOperation
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBulkRunSqlOperation overwrites any union data inside the BulkRequest_Args_Item as the provided BulkRunSqlOperation
+func (t *BulkRequest_Args_Item) FromBulkRunSqlOperation(v BulkRunSqlOperation) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBulkRunSqlOperation performs a merge with any union data inside the BulkRequest_Args_Item, using the provided BulkRunSqlOperation
+func (t *BulkRequest_Args_Item) MergeBulkRunSqlOperation(v BulkRunSqlOperation) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t BulkRequest_Args_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *BulkRequest_Args_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // AsSqlMigrationStep returns the union data inside the MigrationStep as a SqlMigrationStep
 func (t MigrationStep) AsSqlMigrationStep() (SqlMigrationStep, error) {
@@ -521,6 +944,11 @@ type ClientInterface interface {
 	MetadataOperationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	MetadataOperation(ctx context.Context, body MetadataOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ExecuteQueryWithBody request with any body
+	ExecuteQueryWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ExecuteQuery(ctx context.Context, body ExecuteQueryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) ExecuteMigrationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -561,6 +989,30 @@ func (c *Client) MetadataOperationWithBody(ctx context.Context, contentType stri
 
 func (c *Client) MetadataOperation(ctx context.Context, body MetadataOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMetadataOperationRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ExecuteQueryWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewExecuteQueryRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ExecuteQuery(ctx context.Context, body ExecuteQueryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewExecuteQueryRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -651,6 +1103,46 @@ func NewMetadataOperationRequestWithBody(server string, contentType string, body
 	return req, nil
 }
 
+// NewExecuteQueryRequest calls the generic ExecuteQuery builder with application/json body
+func NewExecuteQueryRequest(server string, body ExecuteQueryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewExecuteQueryRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewExecuteQueryRequestWithBody generates requests for ExecuteQuery with any type of body
+func NewExecuteQueryRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v2/query")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -703,6 +1195,11 @@ type ClientWithResponsesInterface interface {
 	MetadataOperationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MetadataOperationR, error)
 
 	MetadataOperationWithResponse(ctx context.Context, body MetadataOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*MetadataOperationR, error)
+
+	// ExecuteQueryWithBodyWithResponse request with any body
+	ExecuteQueryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExecuteQueryR, error)
+
+	ExecuteQueryWithResponse(ctx context.Context, body ExecuteQueryJSONRequestBody, reqEditors ...RequestEditorFn) (*ExecuteQueryR, error)
 }
 
 type ExecuteMigrationR struct {
@@ -754,6 +1251,32 @@ func (r MetadataOperationR) StatusCode() int {
 	return 0
 }
 
+type ExecuteQueryR struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		union json.RawMessage
+	}
+	JSON400 *PostgresErrorResponse
+	JSON500 *ErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ExecuteQueryR) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ExecuteQueryR) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // ExecuteMigrationWithBodyWithResponse request with arbitrary body returning *ExecuteMigrationR
 func (c *ClientWithResponses) ExecuteMigrationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExecuteMigrationR, error) {
 	rsp, err := c.ExecuteMigrationWithBody(ctx, contentType, body, reqEditors...)
@@ -786,6 +1309,23 @@ func (c *ClientWithResponses) MetadataOperationWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseMetadataOperationR(rsp)
+}
+
+// ExecuteQueryWithBodyWithResponse request with arbitrary body returning *ExecuteQueryR
+func (c *ClientWithResponses) ExecuteQueryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExecuteQueryR, error) {
+	rsp, err := c.ExecuteQueryWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseExecuteQueryR(rsp)
+}
+
+func (c *ClientWithResponses) ExecuteQueryWithResponse(ctx context.Context, body ExecuteQueryJSONRequestBody, reqEditors ...RequestEditorFn) (*ExecuteQueryR, error) {
+	rsp, err := c.ExecuteQuery(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseExecuteQueryR(rsp)
 }
 
 // ParseExecuteMigrationR parses an HTTP response from a ExecuteMigrationWithResponse call
@@ -846,6 +1386,48 @@ func ParseMetadataOperationR(rsp *http.Response) (*MetadataOperationR, error) {
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseExecuteQueryR parses an HTTP response from a ExecuteQueryWithResponse call
+func ParseExecuteQueryR(rsp *http.Response) (*ExecuteQueryR, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ExecuteQueryR{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			union json.RawMessage
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest PostgresErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

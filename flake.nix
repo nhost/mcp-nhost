@@ -28,6 +28,7 @@
             "go.mod"
             "go.sum"
             "nhost/auth/openapi.yaml"
+            "nhost/graphql/openapi.yaml"
             "tools/cloud/schema.graphql"
             "tools/cloud/schema-with-mutations.graphql"
             (inDirectory "testdata")
