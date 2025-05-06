@@ -115,7 +115,7 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					Description: cloud.ToolGetGraphqlSchemaInstructions,
 					InputSchema: mcp.ToolInputSchema{
 						Type:       "object",
-						Properties: nil,
+						Properties: map[string]any{},
 						Required:   nil,
 					},
 					Annotations: mcp.ToolAnnotation{
@@ -156,7 +156,7 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					Description: local.ToolConfigServerSchemaInstructions,
 					InputSchema: mcp.ToolInputSchema{
 						Type:       "object",
-						Properties: nil,
+						Properties: map[string]any{},
 						Required:   nil,
 					},
 					Annotations: mcp.ToolAnnotation{
@@ -307,7 +307,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 				{
 					Name:        "local-get-management-graphql-schema",
 					Description: local.ToolGetGraphqlManagementSchemaInstructions,
-					InputSchema: mcp.ToolInputSchema{Type: "object"},
+					InputSchema: mcp.ToolInputSchema{
+						Type: "object",
+						Properties: map[string]any{},
+					},
 					Annotations: mcp.ToolAnnotation{
 						Title:          "Get GraphQL's Management Schema for Nhost Development Project",
 						ReadOnlyHint:   true,
