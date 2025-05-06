@@ -308,7 +308,7 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					Name:        "local-get-management-graphql-schema",
 					Description: local.ToolGetGraphqlManagementSchemaInstructions,
 					InputSchema: mcp.ToolInputSchema{
-						Type: "object",
+						Type:       "object",
 						Properties: map[string]any{},
 					},
 					Annotations: mcp.ToolAnnotation{
