@@ -62,6 +62,15 @@ func (s *MCPServer) HandleMessage(
 		return nil
 	}
 
+	handleErr := s.hooks.onRequestInitialization(ctx, baseMessage.ID, message)
+	if handleErr != nil {
+		return createErrorResponse(
+			baseMessage.ID,
+			mcp.INVALID_REQUEST,
+			handleErr.Error(),
+		)
+	}
+
 	switch baseMessage.Method {
 	case mcp.MethodInitialize:
 		var request mcp.InitializeRequest
@@ -70,7 +79,7 @@ func (s *MCPServer) HandleMessage(
 			err = &requestError{
 				id:   baseMessage.ID,
 				code: mcp.INVALID_REQUEST,
-				err:  &UnparseableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
+				err:  &UnparsableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
 			}
 		} else {
 			s.hooks.beforeInitialize(ctx, baseMessage.ID, &request)
@@ -89,7 +98,7 @@ func (s *MCPServer) HandleMessage(
 			err = &requestError{
 				id:   baseMessage.ID,
 				code: mcp.INVALID_REQUEST,
-				err:  &UnparseableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
+				err:  &UnparsableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
 			}
 		} else {
 			s.hooks.beforePing(ctx, baseMessage.ID, &request)
@@ -114,7 +123,7 @@ func (s *MCPServer) HandleMessage(
 			err = &requestError{
 				id:   baseMessage.ID,
 				code: mcp.INVALID_REQUEST,
-				err:  &UnparseableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
+				err:  &UnparsableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
 			}
 		} else {
 			s.hooks.beforeListResources(ctx, baseMessage.ID, &request)
@@ -139,7 +148,7 @@ func (s *MCPServer) HandleMessage(
 			err = &requestError{
 				id:   baseMessage.ID,
 				code: mcp.INVALID_REQUEST,
-				err:  &UnparseableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
+				err:  &UnparsableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
 			}
 		} else {
 			s.hooks.beforeListResourceTemplates(ctx, baseMessage.ID, &request)
@@ -164,7 +173,7 @@ func (s *MCPServer) HandleMessage(
 			err = &requestError{
 				id:   baseMessage.ID,
 				code: mcp.INVALID_REQUEST,
-				err:  &UnparseableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
+				err:  &UnparsableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
 			}
 		} else {
 			s.hooks.beforeReadResource(ctx, baseMessage.ID, &request)
@@ -189,7 +198,7 @@ func (s *MCPServer) HandleMessage(
 			err = &requestError{
 				id:   baseMessage.ID,
 				code: mcp.INVALID_REQUEST,
-				err:  &UnparseableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
+				err:  &UnparsableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
 			}
 		} else {
 			s.hooks.beforeListPrompts(ctx, baseMessage.ID, &request)
@@ -214,7 +223,7 @@ func (s *MCPServer) HandleMessage(
 			err = &requestError{
 				id:   baseMessage.ID,
 				code: mcp.INVALID_REQUEST,
-				err:  &UnparseableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
+				err:  &UnparsableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
 			}
 		} else {
 			s.hooks.beforeGetPrompt(ctx, baseMessage.ID, &request)
@@ -239,7 +248,7 @@ func (s *MCPServer) HandleMessage(
 			err = &requestError{
 				id:   baseMessage.ID,
 				code: mcp.INVALID_REQUEST,
-				err:  &UnparseableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
+				err:  &UnparsableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
 			}
 		} else {
 			s.hooks.beforeListTools(ctx, baseMessage.ID, &request)
@@ -264,7 +273,7 @@ func (s *MCPServer) HandleMessage(
 			err = &requestError{
 				id:   baseMessage.ID,
 				code: mcp.INVALID_REQUEST,
-				err:  &UnparseableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
+				err:  &UnparsableMessageError{message: message, err: unmarshalErr, method: baseMessage.Method},
 			}
 		} else {
 			s.hooks.beforeCallTool(ctx, baseMessage.ID, &request)
