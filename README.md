@@ -10,55 +10,55 @@ MCP-Nhost is designed to provide a unified interface for managing Nhost projects
 
 The following tools are currently exposed through the MCP interface:
 
-1. **cloud_get_graphql_schema**
+1. **cloud-get-graphql-schema**
    - Provides the GraphQL schema for the Nhost Cloud platform
    - Gives access to queries and mutations available for cloud management
 
-2. **cloud_graphql_query**
+2. **cloud-graphql-query**
    - Executes GraphQL queries and mutations against the Nhost Cloud platform
    - Enables project and organization management
    - Allows querying and updating project configurations
    - Mutations require enabling them when starting the server
 
-3. **local_get_graphql_schema**
+3. **local-get-graphql-schema**
    - Retrieves the GraphQL schema for local Nhost development projects
    - Provides access to project-specific queries and mutations
    - Helps understand available operations for local development helping generating code
    - Uses "user" role unless specified otherwise
 
-4. **local_graphql_query**
+4. **local-graphql-query**
    - Executes GraphQL queries against local Nhost development projects
    - Enables testing and development of project-specific operations
    - Supports both queries and mutations for local development
    - Uses "user" role unless specified otherwise
 
-5. **local_config_server_get_schema**
+5. **local-config-server-get-schema**
    - Retrieves the GraphQL schema for the local config server
    - Helps understand available configuration options for local projects
 
-6. **local_config_server_query**
+6. **local-config-server-query**
    - Executes GraphQL queries against the local config server
    - Enables querying and modifying local project configuration
    - Changes require running 'nhost up' to take effect
 
-7. **local_get_management_graphql_schema**
+7. **local-get-management-graphql-schema**
    - Retrieves the GraphQL management schema for local projects
    - Useful for understanding how to manage Hasura metadata, migrations, and permissions
    - Provides insight into available management operations before using the management tool
 
-8. **local_manage_graphql**
+8. **local-manage-graphql**
    - Interacts with GraphQL's management endpoints for local projects
    - Manages Hasura metadata, migrations, permissions, and remote schemas
    - Creates and applies database migrations
    - Handles data and schema changes through proper migration workflows
    - Manages roles and permissions
 
-9. **project_get_graphql_schema**
+9. **project-get-graphql-schema**
    - Retrieves the GraphQL schema for Nhost Cloud projects
    - Provides access to project-specific queries and mutations
    - Uses "user" role unless specified otherwise
 
-10. **project_graphql_query**
+10. **project-graphql-query**
     - Executes GraphQL queries against Nhost Cloud projects
     - Enables interaction with live project data
     - Supports both queries and mutations (need to be allowed)
@@ -113,6 +113,45 @@ mcp-nhost --help
 ```
 
 Or check [USAGE.md](docs/USAGE.md) for more details.
+
+## Troubleshooting
+
+If you run into issues using the MCP server you can try running the tools yourself. For example:
+
+```
+# cloud-get-graphql-schema
+echo  '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"cloud-get-graphql-schema","arguments":{}},"id":1}' | mcp-nhost start
+
+# cloud-graphql-query
+echo  '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"cloud-graphql-query","arguments":{"query":"{ apps { id subdomain name } }"}},"id":1}' | mcp-nhost start
+
+# local-get-graphql-schema
+echo  '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"local-get-graphql-schema","arguments":{"role":"user"}},"id":1}' | mcp-nhost start
+
+# local-graphql-query
+echo  '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"local-graphql-query","arguments":{"query":"{ users { id } }", "role":"admin"}},"id":1}' | mcp-nhost start
+
+# local-config-server-get-schema
+echo  '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"local-config-server-get-schema","arguments":{}},"id":1}' | mcp-nhost start
+
+# local-config-server-query
+echo  '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"local-config-server-query","arguments":{"query":"{ config(appID: \"00000000-0000-0000-0000-000000000000\", resolve: true) { postgres { version } } }"}},"id":1}' | mcp-nhost start
+
+# local-get-management-graphql-schema
+echo  '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"local-get-management-graphql-schema","arguments":{}},"id":1}' | mcp-nhost start
+
+# local-manage-graphql
+echo '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"local-manage-graphql","arguments":{"body":"{\"type\":\"export_metadata\",\"args\":{}}","endpoint":"https://local.hasura.local.nhost.run/v1/metadata"}},"id":1}' | mcp-nhost start
+
+# project-get-graphql-schema - set projectSubdomain to your own project
+echo  '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"project-get-graphql-schema","arguments":{"projectSubdomain":"replaceMe", "role": "user"}},"id":1}' | mcp-nhost start
+
+# project-graphql-query - set projectSubdomain to your own project
+echo  '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"project-graphql-query","arguments":{"projectSubdomain":"replaceMe","query":"{ users { id } }", "role":"admin"}},"id":1}' | mcp-nhost start
+
+# search
+echo  '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"search","arguments":{"query":"how to enable magic links"}},"id":1}' | mcp-nhost start
+```
 
 ## Roadmap
 
