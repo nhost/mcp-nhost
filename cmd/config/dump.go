@@ -26,10 +26,10 @@ func actionDump(_ context.Context, cmd *cli.Command) error {
 		return cli.Exit("failed to marshal config file "+err.Error(), 1)
 	}
 
-	fmt.Println("Configuration Preview:")
-	fmt.Println("---------------------")
-	fmt.Println(string(b))
-	fmt.Println()
+	fmt.Println("Configuration Preview:") //nolint:forbidigo
+	fmt.Println("---------------------")  //nolint:forbidigo
+	fmt.Println(string(b))                //nolint:forbidigo
+	fmt.Println()                         //nolint:forbidigo
 
 	return nil
 }
