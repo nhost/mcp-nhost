@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -92,13 +93,24 @@ func GetConfigPath() string {
 }
 
 func Load(path string) (*Config, error) {
-	data, err := os.ReadFile(path)
+	f, err := os.OpenFile(path, os.O_RDONLY, 0o600) //nolint:mnd
 	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
+		return nil, fmt.Errorf("failed to open config file: %w", err)
 	}
+	defer f.Close()
+
+	decoder := toml.NewDecoder(f)
+	decoder.DisallowUnknownFields()
 
 	var config Config
-	if err := toml.Unmarshal(data, &config); err != nil {
+	if err := decoder.Decode(&config); err != nil {
+		var decodeErr *toml.DecodeError
+		var strictErr *toml.StrictMissingError
+		if errors.As(err, &decodeErr) {
+			return nil, errors.New("\n" + decodeErr.String()) //nolint:goerr113
+		} else if errors.As(err, &strictErr) {
+			return nil, errors.New("\n" + strictErr.String()) //nolint:goerr113
+		}
 		return nil, fmt.Errorf("failed to unmarshal config file: %w", err)
 	}
 
