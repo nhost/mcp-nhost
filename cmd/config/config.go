@@ -34,6 +34,21 @@ func Command() *cli.Command {
 				Sources: cli.EnvVars("CONFIRM"),
 			},
 		},
+		Commands: []*cli.Command{
+			{
+				Name:  "dump",
+				Usage: "Dump the configuration to stdout for verification",
+				Flags: []cli.Flag{
+					&cli.StringFlag{ //nolint:exhaustruct
+						Name:    flagConfigFile,
+						Usage:   "Path to the config file",
+						Value:   config.GetConfigPath(),
+						Sources: cli.EnvVars("CONFIG_FILE"),
+					},
+				},
+				Action: actionDump,
+			},
+		},
 		Action: action,
 	}
 }
