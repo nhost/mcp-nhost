@@ -135,13 +135,13 @@
 
           docker-image-arm64 = nixops-lib.go.docker-image {
             inherit name version buildInputs;
-            created = "now";
+            created = "1970-01-01T00:00:00Z";
             package = mcp-nhost-arm64-linux;
           };
 
           docker-image-amd64 = nixops-lib.go.docker-image {
             inherit name version buildInputs;
-            created = "now";
+            created = "1970-01-01T00:00:00Z";
             package = mcp-nhost-amd64-linux;
           };
 
