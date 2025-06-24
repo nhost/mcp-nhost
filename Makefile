@@ -13,7 +13,7 @@ else ifeq ($(shell uname -m),arm64)
   ARCH?=arm64
 else ifeq ($(shell uname -m),aarch64)
   HOST_ARCH?=aarch64
-   ARCH?=aarch64
+  ARCH?=aarch64
 endif
 
 ifeq ($(shell uname -o),Darwin)
@@ -39,6 +39,7 @@ help: ## Show this help.
 .PHONY: get-version
 get-version:  ## Return version
 	@sed -i '/^\s*version = "0\.0\.0-dev";/s//version = "${VERSION}";/' flake.nix
+	@sed -i '/^\s*created = "1970-.*";/s//created = "${shell date --utc '+%Y-%m-%dT%H:%M:%SZ'}";/' flake.nix
 	@echo $(VERSION)
 
 
@@ -90,4 +91,6 @@ build-docker-image:  ## Build docker image
 	nix build $(docker-build-options) \
 		.\#packages.$(HOST_ARCH)-linux.docker-image-$(ARCH) \
 		--print-build-logs
-	docker load < result
+	skopeo copy --insecure-policy \
+		--override-arch $(ARCH) \
+		dir:./result docker-daemon:nhost/mcp-nhost:$(VERSION)
