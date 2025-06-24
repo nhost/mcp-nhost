@@ -4,9 +4,10 @@
     nixpkgs.follows = "nixops/nixpkgs";
     flake-utils.follows = "nixops/flake-utils";
     nix-filter.follows = "nixops/nix-filter";
+    nix2container.follows = "nixops/nix2container";
   };
 
-  outputs = { self, nixops, nixpkgs, flake-utils, nix-filter }:
+  outputs = { self, nixops, nixpkgs, flake-utils, nix-filter, nix2container }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         overlays = [
@@ -57,10 +58,12 @@
         nativeBuildInputs = [
         ];
 
-        nixops-lib = nixops.lib { inherit pkgs; };
+        nix2containerPkgs = nix2container.packages.${system};
+        nixops-lib = nixops.lib { inherit pkgs nix2containerPkgs; };
 
         name = "mcp-nhost";
         version = "0.0.0-dev";
+        created = "1970-01-01T00:00:00Z";
         submodule = ".";
 
         tags = [ ];
@@ -81,6 +84,7 @@
         devShells = flake-utils.lib.flattenTree {
           default = nixops-lib.go.devShell {
             buildInputs = [
+              pkgs.skopeo
             ] ++ checkDeps ++ buildInputs ++ nativeBuildInputs;
           };
         };
@@ -131,13 +135,15 @@
           });
 
           docker-image-arm64 = nixops-lib.go.docker-image {
-            inherit name version buildInputs;
+            inherit name version created buildInputs;
+            arch = "arm64";
 
             package = mcp-nhost-arm64-linux;
           };
 
           docker-image-amd64 = nixops-lib.go.docker-image {
-            inherit name version buildInputs;
+            inherit name version created buildInputs;
+            arch = "amd64";
 
             package = mcp-nhost-amd64-linux;
           };

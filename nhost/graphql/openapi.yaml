@@ -10,7 +10,7 @@ security:
 paths:
   /v2/query:
     post:
-      summary: Execute database operations. Do not use to modify the database schema, use /v1/migrate instead
+      summary: Execute database operations. Do not use to modify the database schema, use /apis/migrate instead
       description: Execute SQL queries and other database operations
       operationId: executeQuery
       requestBody:

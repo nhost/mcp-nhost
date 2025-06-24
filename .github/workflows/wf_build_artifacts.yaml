@@ -77,19 +77,6 @@ jobs:
         make build-docker-image ARCH=${{ inputs.GOARCH }}
       if: ${{ ( inputs.GOOS == 'linux' ) }}
 
-    - name: "Ammend manifest"
-      run: |
-          # hack that speeds up build a lot by crosscompiling with nix/go
-          # and avoiding to use qemu
-          mkdir tmp && cd tmp
-          tar xvzf ../result
-          sed -i 's/arm64/amd64/g' *.json
-          tar cvzf image *
-          rm ../result
-          cp image ../result
-      shell: bash
-      if: ${{ ( inputs.GOOS == 'linux' && inputs.GOARCH == 'amd64' ) }}
-
     - name: "Push docker-image to artifact repository"
       uses: actions/upload-artifact@v4
       with:
