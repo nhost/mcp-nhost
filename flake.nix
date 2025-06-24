@@ -57,7 +57,10 @@
         nativeBuildInputs = [
         ];
 
-        nixops-lib = nixops.lib { inherit pkgs; };
+        nixops-lib = nixops.lib {
+          inherit pkgs;
+          nix2containerPkgs = nixops.inputs.nix2container.packages.${system};
+        };
 
         name = "mcp-nhost";
         version = "0.0.0-dev";
@@ -132,13 +135,13 @@
 
           docker-image-arm64 = nixops-lib.go.docker-image {
             inherit name version buildInputs;
-
+            created = "now";
             package = mcp-nhost-arm64-linux;
           };
 
           docker-image-amd64 = nixops-lib.go.docker-image {
             inherit name version buildInputs;
-
+            created = "now";
             package = mcp-nhost-amd64-linux;
           };
 
