@@ -107,9 +107,9 @@ func Load(path string) (*Config, error) {
 		var decodeErr *toml.DecodeError
 		var strictErr *toml.StrictMissingError
 		if errors.As(err, &decodeErr) {
-			return nil, errors.New("\n" + decodeErr.String()) //nolint:goerr113
+			return nil, errors.New("\n" + decodeErr.String()) //nolint:err113
 		} else if errors.As(err, &strictErr) {
-			return nil, errors.New("\n" + strictErr.String()) //nolint:goerr113
+			return nil, errors.New("\n" + strictErr.String()) //nolint:err113
 		}
 		return nil, fmt.Errorf("failed to unmarshal config file: %w", err)
 	}

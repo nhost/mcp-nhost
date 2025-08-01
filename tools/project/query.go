@@ -110,7 +110,7 @@ func (t *Tool) handleGraphqlQuery(
 	project, ok := t.projects[projectSubdomain]
 	if !ok {
 		return nil,
-			errors.New("this project is not configured to be accessed by an LLM") //nolint:goerr113
+			errors.New("this project is not configured to be accessed by an LLM") //nolint:err113
 	}
 
 	interceptors := []func(ctx context.Context, req *http.Request) error{

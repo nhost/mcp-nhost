@@ -93,7 +93,7 @@ func findAsset(
 			return asset.BrowserDownloadURL, nil
 		}
 	}
-	return "", fmt.Errorf("failed to find asset for %s", want) //nolint:goerr113
+	return "", fmt.Errorf("failed to find asset for %s", want) //nolint:err113
 }
 
 func install(
