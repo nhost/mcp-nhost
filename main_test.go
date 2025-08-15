@@ -160,9 +160,18 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					Name:        "local-config-server-get-schema",
 					Description: local.ToolConfigServerSchemaInstructions,
 					InputSchema: mcp.ToolInputSchema{
-						Type:       "object",
-						Properties: map[string]any{},
-						Required:   nil,
+						Type: "object",
+						Properties: map[string]any{
+							"includeMutations": map[string]any{
+								"description": "include mutations in the schema",
+								"type":        "boolean",
+							},
+							"includeQueries": map[string]any{
+								"description": "include queries in the schema",
+								"type":        "boolean",
+							},
+						},
+						Required: []string{"includeQueries", "includeMutations"},
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Get GraphQL Schema for Nhost Config Server",
@@ -233,8 +242,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 								"type":        "string",
 							},
 							"variables": map[string]any{
-								"description": "variables to use in the query",
-								"type":        "string",
+								"additionalProperties": true,
+								"description":          "variables to use in the query",
+								"properties":           map[string]any{},
+								"type":                 "object",
 							},
 						},
 						Required: []string{"query", "role"},
