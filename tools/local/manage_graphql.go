@@ -10,7 +10,6 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
-	"github.com/nhost/mcp-nhost/tools"
 )
 
 const (
@@ -26,7 +25,8 @@ const (
 
 		## Metadata changes
 
-		* When changing metadata via the /v1/metadata always perform a bulk request to avoid
+		* When changing metadata always use the /apis/migrate endpoint
+		* Always perform a bulk request to avoid
 		  having to perform multiple requests
 		* The admin user always has full permissions to everything by default, no need to configure
 		  anything
@@ -54,6 +54,11 @@ const (
 		`
 )
 
+type ManageGraphqlRequest struct {
+	Endpoint string `json:"endpoint"`
+	Body     string `json:"body"`
+}
+
 func (t *Tool) registerManageGraphql(mcpServer *server.MCPServer) {
 	schemaTool := mcp.NewTool(
 		ToolManageGraphqlName,
@@ -61,10 +66,10 @@ func (t *Tool) registerManageGraphql(mcpServer *server.MCPServer) {
 		mcp.WithToolAnnotation(
 			mcp.ToolAnnotation{
 				Title:           "Manage GraphQL's Metadata on an Nhost Development Project",
-				ReadOnlyHint:    false,
-				DestructiveHint: true,
-				IdempotentHint:  true,
-				OpenWorldHint:   true,
+				ReadOnlyHint:    ptr(false),
+				DestructiveHint: ptr(true),
+				IdempotentHint:  ptr(true),
+				OpenWorldHint:   ptr(true),
 			},
 		),
 		mcp.WithString(
@@ -80,7 +85,7 @@ func (t *Tool) registerManageGraphql(mcpServer *server.MCPServer) {
 			mcp.Required(),
 		),
 	)
-	mcpServer.AddTool(schemaTool, t.handleManageGraphql)
+	mcpServer.AddTool(schemaTool, mcp.NewStructuredToolHandler(t.handleManageGraphql))
 }
 
 type httpResponse struct {
@@ -114,6 +119,7 @@ func genericQuery(
 	}
 
 	client := &http.Client{} //nolint: exhaustruct
+
 	response, err := client.Do(request)
 	if err != nil {
 		return httpResponse{}, fmt.Errorf("failed to execute request: %w", err)
@@ -128,57 +134,32 @@ func genericQuery(
 	}, nil
 }
 
-func (t *Tool) handleManageGraphqlArguments(
-	arguments map[string]any,
-) (string, string, http.Header, error) {
-	endpoint, err := tools.FromParams[string](arguments, "endpoint")
-	if err != nil {
-		return "", "", nil, fmt.Errorf("failed to parse endpoint: %w", err)
+func (t *Tool) handleManageGraphql(
+	ctx context.Context, _ mcp.CallToolRequest, args ManageGraphqlRequest,
+) (*mcp.CallToolResult, error) {
+	if args.Endpoint == "" {
+		return mcp.NewToolResultError("endpoint is required"), nil
 	}
 
-	body, err := tools.FromParams[string](arguments, "body")
-	if err != nil {
-		return "", "", nil, fmt.Errorf("failed to parse body: %w", err)
+	if args.Body == "" {
+		return mcp.NewToolResultError("body is required"), nil
 	}
 
 	headers := http.Header{}
 	headers.Add("Content-Type", "application/json")
 	headers.Add("Accept", "application/json")
 
-	return endpoint, body, headers, nil
-}
-
-func (t *Tool) handleManageGraphql(
-	ctx context.Context, req mcp.CallToolRequest,
-) (*mcp.CallToolResult, error) {
-	endpoint, body, headers, err := t.handleManageGraphqlArguments(req.Params.Arguments)
+	response, err := genericQuery(
+		ctx, args.Endpoint, args.Body, http.MethodPost, headers, t.interceptors,
+	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	response, err := genericQuery(ctx, endpoint, body, http.MethodPost, headers, t.interceptors)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute query: %w", err)
+		return mcp.NewToolResultErrorFromErr("failed to execute query", err), nil
 	}
 
 	b, err := json.Marshal(response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal response: %w", err)
+		return mcp.NewToolResultErrorFromErr("failed to marshal response", err), nil
 	}
 
-	return &mcp.CallToolResult{
-		Result: mcp.Result{
-			Meta: nil,
-		},
-		Content: []mcp.Content{
-			mcp.TextContent{
-				Annotated: mcp.Annotated{
-					Annotations: nil,
-				},
-				Type: "text",
-				Text: string(b),
-			},
-		},
-		IsError: false,
-	}, nil
+	return mcp.NewToolResultStructured(response, string(b)), nil
 }

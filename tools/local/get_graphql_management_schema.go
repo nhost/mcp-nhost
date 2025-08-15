@@ -25,10 +25,10 @@ func (t *Tool) registerGetGraphqlManagementSchema(mcpServer *server.MCPServer) {
 		mcp.WithToolAnnotation(
 			mcp.ToolAnnotation{
 				Title:           "Get GraphQL's Management Schema for Nhost Development Project",
-				ReadOnlyHint:    true,
-				DestructiveHint: false,
-				IdempotentHint:  true,
-				OpenWorldHint:   true,
+				ReadOnlyHint:    ptr(true),
+				DestructiveHint: ptr(false),
+				IdempotentHint:  ptr(true),
+				OpenWorldHint:   ptr(true),
 			},
 		),
 	)
@@ -38,19 +38,5 @@ func (t *Tool) registerGetGraphqlManagementSchema(mcpServer *server.MCPServer) {
 func (t *Tool) handleGetGraphqlManagementSchema(
 	_ context.Context, _ mcp.CallToolRequest,
 ) (*mcp.CallToolResult, error) {
-	return &mcp.CallToolResult{
-		Result: mcp.Result{
-			Meta: nil,
-		},
-		Content: []mcp.Content{
-			mcp.TextContent{
-				Annotated: mcp.Annotated{
-					Annotations: nil,
-				},
-				Type: "text",
-				Text: graphql.Schema,
-			},
-		},
-		IsError: false,
-	}, nil
+	return mcp.NewToolResultText(graphql.Schema), nil
 }

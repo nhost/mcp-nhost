@@ -46,6 +46,7 @@ func (mgr *Manager) GetReleases(ctx context.Context, version string) (Releases, 
 
 	if resp.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(resp.Body)
+
 		return nil, fmt.Errorf( //nolint:err113
 			"failed to fetch releases with status code (%d): %s", resp.StatusCode, string(b),
 		)
@@ -82,6 +83,7 @@ func (mgr *Manager) LatestRelease(ctx context.Context, version string) (Release,
 			return Release{}, err
 		}
 	}
+
 	return mgr.cache[0], nil
 }
 
@@ -132,6 +134,7 @@ func extractTarGz(gzipStream io.Reader, dst io.Writer) error {
 			if _, err := io.Copy(dst, tarReader); err != nil { //nolint:gosec
 				return fmt.Errorf("failed to copy file: %w", err)
 			}
+
 			return nil
 
 		default:

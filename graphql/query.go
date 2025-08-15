@@ -68,8 +68,11 @@ func CheckAllowedGraphqlQuery( //nolint:cyclop
 			return fmt.Errorf("%w: %s", ErrQueryNotAllowed, queryString)
 		}
 
-		var selectionSet ast.SelectionSet
-		var allowed []string
+		var (
+			selectionSet ast.SelectionSet
+			allowed      []string
+		)
+
 		if operation.Operation == ast.Query {
 			selectionSet = operation.SelectionSet
 			allowed = allowedQueries
@@ -129,6 +132,7 @@ func Query[T any]( //nolint:cyclop,funlen
 	}
 
 	client := &http.Client{} //nolint:exhaustruct
+
 	resp, err := client.Do(request)
 	if err != nil {
 		return fmt.Errorf("failed to execute request: %w", err)

@@ -28,6 +28,7 @@ func allowedQueries(allowQueries []string) []string {
 	if len(allowQueries) == 1 && allowQueries[0] == "*" {
 		return nil
 	}
+
 	return allowQueries
 }
 
@@ -35,15 +36,19 @@ func NewTool(
 	projList []config.Project,
 ) (*Tool, error) {
 	projects := make(map[string]Project)
+
 	for _, proj := range projList {
 		authURL := fmt.Sprintf("https://%s.auth.%s.nhost.run/v1", proj.Subdomain, proj.Region)
 		graphqlURL := fmt.Sprintf("https://%s.graphql.%s.nhost.run/v1", proj.Subdomain, proj.Region)
+
 		var interceptor func(ctx context.Context, req *http.Request) error
+
 		switch {
 		case proj.AdminSecret != nil && *proj.AdminSecret != "":
 			interceptor = auth.WithAdminSecret(*proj.AdminSecret)
 		case proj.PAT != nil && *proj.PAT != "":
 			var err error
+
 			interceptor, err = auth.WithPAT(authURL, *proj.PAT)
 			if err != nil {
 				return nil,
@@ -73,6 +78,7 @@ func (t *Tool) Register(mcpServer *server.MCPServer) error {
 	for _, proj := range t.projects {
 		projectNames = append(projectNames, proj.subdomain)
 	}
+
 	slices.Sort(projectNames)
 
 	projectNamesStr := strings.Join(projectNames, ", ")

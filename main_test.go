@@ -18,6 +18,10 @@ import (
 	"github.com/nhost/mcp-nhost/tools/project"
 )
 
+func ptr[T any](v T) *T {
+	return &v
+}
+
 func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 	t.Parallel()
 
@@ -60,6 +64,7 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 		Name:    "example-client",
 		Version: "1.0.0",
 	}
+
 	res, err := mcpClient.Initialize(
 		context.Background(),
 		initRequest,
@@ -72,7 +77,7 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 		res,
 		//nolint:tagalign
 		&mcp.InitializeResult{
-			ProtocolVersion: "2024-11-05",
+			ProtocolVersion: "2025-06-18",
 			Capabilities: mcp.ServerCapabilities{
 				Experimental: nil,
 				Logging:      nil,
@@ -81,7 +86,7 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 				Tools: &struct {
 					ListChanged bool "json:\"listChanged,omitempty\""
 				}{
-					ListChanged: false,
+					ListChanged: true,
 				},
 			},
 			ServerInfo: mcp.Implementation{
@@ -120,10 +125,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Get GraphQL Schema for Nhost Cloud Platform",
-						ReadOnlyHint:    true,
-						DestructiveHint: false,
-						IdempotentHint:  true,
-						OpenWorldHint:   true,
+						ReadOnlyHint:    ptr(true),
+						DestructiveHint: ptr(false),
+						IdempotentHint:  ptr(true),
+						OpenWorldHint:   ptr(true),
 					},
 				},
 				{
@@ -145,10 +150,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Perform GraphQL Query on Nhost Cloud Platform",
-						ReadOnlyHint:    false,
-						DestructiveHint: true,
-						IdempotentHint:  false,
-						OpenWorldHint:   true,
+						ReadOnlyHint:    ptr(false),
+						DestructiveHint: ptr(true),
+						IdempotentHint:  ptr(false),
+						OpenWorldHint:   ptr(true),
 					},
 				},
 				{
@@ -161,10 +166,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Get GraphQL Schema for Nhost Config Server",
-						ReadOnlyHint:    true,
-						DestructiveHint: false,
-						IdempotentHint:  true,
-						OpenWorldHint:   true,
+						ReadOnlyHint:    ptr(true),
+						DestructiveHint: ptr(false),
+						IdempotentHint:  ptr(true),
+						OpenWorldHint:   ptr(true),
 					},
 				},
 				{
@@ -186,10 +191,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Perform GraphQL Query on Nhost Config Server",
-						ReadOnlyHint:    false,
-						DestructiveHint: true,
-						IdempotentHint:  false,
-						OpenWorldHint:   true,
+						ReadOnlyHint:    ptr(false),
+						DestructiveHint: ptr(true),
+						IdempotentHint:  ptr(false),
+						OpenWorldHint:   ptr(true),
 					},
 				},
 				{
@@ -207,10 +212,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Get GraphQL Schema for Nhost Development Project",
-						ReadOnlyHint:    true,
-						DestructiveHint: false,
-						IdempotentHint:  true,
-						OpenWorldHint:   true,
+						ReadOnlyHint:    ptr(true),
+						DestructiveHint: ptr(false),
+						IdempotentHint:  ptr(true),
+						OpenWorldHint:   ptr(true),
 					},
 				},
 				{
@@ -236,10 +241,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Perform GraphQL Query on Nhost Development Project",
-						ReadOnlyHint:    false,
-						DestructiveHint: true,
-						IdempotentHint:  false,
-						OpenWorldHint:   true,
+						ReadOnlyHint:    ptr(false),
+						DestructiveHint: ptr(true),
+						IdempotentHint:  ptr(false),
+						OpenWorldHint:   ptr(true),
 					},
 				},
 				{
@@ -261,10 +266,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Get GraphQL Schema for Nhost Project running on Nhost Cloud",
-						ReadOnlyHint:    true,
-						DestructiveHint: false,
-						IdempotentHint:  true,
-						OpenWorldHint:   true,
+						ReadOnlyHint:    ptr(true),
+						DestructiveHint: ptr(false),
+						IdempotentHint:  ptr(true),
+						OpenWorldHint:   ptr(true),
 					},
 				},
 				{
@@ -298,10 +303,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Perform GraphQL Query on Nhost Project running on Nhost Cloud",
-						ReadOnlyHint:    false,
-						DestructiveHint: true,
-						IdempotentHint:  false,
-						OpenWorldHint:   true,
+						ReadOnlyHint:    ptr(false),
+						DestructiveHint: ptr(true),
+						IdempotentHint:  ptr(false),
+						OpenWorldHint:   ptr(true),
 					},
 				},
 				{
@@ -312,10 +317,11 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 						Properties: map[string]any{},
 					},
 					Annotations: mcp.ToolAnnotation{
-						Title:          "Get GraphQL's Management Schema for Nhost Development Project",
-						ReadOnlyHint:   true,
-						IdempotentHint: true,
-						OpenWorldHint:  true,
+						Title:           "Get GraphQL's Management Schema for Nhost Development Project",
+						ReadOnlyHint:    ptr(true),
+						IdempotentHint:  ptr(true),
+						DestructiveHint: ptr(false),
+						OpenWorldHint:   ptr(true),
 					},
 				},
 				{
@@ -337,9 +343,10 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 					},
 					Annotations: mcp.ToolAnnotation{
 						Title:           "Manage GraphQL's Metadata on an Nhost Development Project",
-						DestructiveHint: true,
-						IdempotentHint:  true,
-						OpenWorldHint:   true,
+						ReadOnlyHint:    ptr(false),
+						DestructiveHint: ptr(true),
+						IdempotentHint:  ptr(true),
+						OpenWorldHint:   ptr(true),
 					},
 				},
 				{
@@ -356,10 +363,11 @@ func TestStart(t *testing.T) { //nolint:cyclop,maintidx
 						Required: []string{"query"},
 					},
 					Annotations: mcp.ToolAnnotation{
-						Title:          "Search Nhost Docs",
-						ReadOnlyHint:   true,
-						IdempotentHint: true,
-						OpenWorldHint:  true,
+						Title:           "Search Nhost Docs",
+						ReadOnlyHint:    ptr(true),
+						IdempotentHint:  ptr(true),
+						DestructiveHint: ptr(false),
+						OpenWorldHint:   ptr(true),
 					},
 				},
 			},

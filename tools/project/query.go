@@ -3,7 +3,6 @@ package project
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/nhost/mcp-nhost/graphql"
 	"github.com/nhost/mcp-nhost/nhost/auth"
-	"github.com/nhost/mcp-nhost/tools"
 )
 
 const (
@@ -19,6 +17,18 @@ const (
 	//nolint:lll
 	ToolGraphqlQueryInstructions = `Execute a GraphQL query against a Nhost project running in the Nhost Cloud. This tool is useful to query and mutate live data running on an online projec. If you run into issues executing queries, retrieve the schema using the project-get-graphql-schema tool in case the schema has changed. If you get an error indicating the query or mutation is not allowed the user may have disabled them in the server, don't retry and tell the user they need to enable them when starting mcp-nhost`
 )
+
+func ptr[T any](v T) *T {
+	return &v
+}
+
+type GraphqlQueryRequest struct {
+	Query            string         `json:"query"`
+	Variables        map[string]any `json:"variables,omitempty"`
+	ProjectSubdomain string         `json:"projectSubdomain"`
+	Role             string         `json:"role"`
+	UserID           string         `json:"userId,omitempty"`
+}
 
 func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer, projects string) {
 	allowedMutations := false
@@ -36,10 +46,10 @@ func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer, projects string
 		mcp.WithToolAnnotation(
 			mcp.ToolAnnotation{
 				Title:           "Perform GraphQL Query on Nhost Project running on Nhost Cloud",
-				ReadOnlyHint:    !allowedMutations,
-				DestructiveHint: allowedMutations,
-				IdempotentHint:  false,
-				OpenWorldHint:   true,
+				ReadOnlyHint:    ptr(!allowedMutations),
+				DestructiveHint: ptr(allowedMutations),
+				IdempotentHint:  ptr(false),
+				OpenWorldHint:   ptr(true),
 			},
 		),
 		mcp.WithString(
@@ -75,85 +85,58 @@ func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer, projects string
 			),
 		),
 	)
-	mcpServer.AddTool(queryTool, t.handleGraphqlQuery)
-}
-
-func (t *Tool) handleGraphqlQueryArgs(
-	args map[string]any,
-) (tools.GraphqlQueryWithRoleRequest, string, string, error) {
-	request, err := tools.QueryRequestWithRoleFromParams(args)
-	if err != nil {
-		return request, "", "", err //nolint:wrapcheck
-	}
-
-	projectSubdomain, err := tools.ProjectFromParams(args)
-	if err != nil {
-		return request, "", "", err //nolint:wrapcheck
-	}
-
-	userID, err := tools.FromParams[string](args, "userId")
-	if err != nil {
-		return request, "", "", err
-	}
-
-	return request, projectSubdomain, userID, nil
+	mcpServer.AddTool(queryTool, mcp.NewStructuredToolHandler(t.handleGraphqlQuery))
 }
 
 func (t *Tool) handleGraphqlQuery(
-	ctx context.Context, req mcp.CallToolRequest,
+	ctx context.Context, _ mcp.CallToolRequest, args GraphqlQueryRequest,
 ) (*mcp.CallToolResult, error) {
-	request, projectSubdomain, userID, err := t.handleGraphqlQueryArgs(req.Params.Arguments)
-	if err != nil {
-		return nil, err
+	if args.Query == "" {
+		return mcp.NewToolResultError("query is required"), nil
 	}
 
-	project, ok := t.projects[projectSubdomain]
+	if args.ProjectSubdomain == "" {
+		return mcp.NewToolResultError("projectSubdomain is required"), nil
+	}
+
+	if args.Role == "" {
+		return mcp.NewToolResultError("role is required"), nil
+	}
+
+	project, ok := t.projects[args.ProjectSubdomain]
 	if !ok {
-		return nil,
-			errors.New("this project is not configured to be accessed by an LLM") //nolint:err113
+		return mcp.NewToolResultError(
+			"this project is not configured to be accessed by an LLM",
+		), nil
 	}
 
 	interceptors := []func(ctx context.Context, req *http.Request) error{
 		project.authInterceptor,
-		auth.WithRole(request.Role),
+		auth.WithRole(args.Role),
 	}
 
-	if userID != "" {
-		interceptors = append(interceptors, auth.WithUserID(userID))
+	if args.UserID != "" {
+		interceptors = append(interceptors, auth.WithUserID(args.UserID))
 	}
 
 	var resp graphql.Response[any]
 	if err := graphql.Query(
 		ctx,
 		project.graphqlURL,
-		request.Query,
-		request.Variables,
+		args.Query,
+		args.Variables,
 		&resp,
 		project.allowQueries,
 		project.allowMutations,
 		interceptors...,
 	); err != nil {
-		return nil, fmt.Errorf("failed to query graphql endpoint: %w", err)
+		return mcp.NewToolResultErrorFromErr("failed to query graphql endpoint", err), nil
 	}
 
 	b, err := json.Marshal(resp)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal response: %w", err)
+		return mcp.NewToolResultErrorFromErr("error marshalling response", err), nil
 	}
 
-	return &mcp.CallToolResult{
-		Result: mcp.Result{
-			Meta: nil,
-		},
-		Content: []mcp.Content{
-			mcp.TextContent{
-				Annotated: mcp.Annotated{
-					Annotations: nil,
-				},
-				Type: "text",
-				Text: string(b),
-			},
-		},
-		IsError: false,
-	}, nil
+	return mcp.NewToolResultStructured(resp, string(b)), nil
 }

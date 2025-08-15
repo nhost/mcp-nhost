@@ -21,9 +21,11 @@ func getTypeName(t Type) string {
 	if t.Kind == KindNonNull {
 		return getTypeName(*t.OfType) + "!"
 	}
+
 	if t.Kind == KindList {
 		return "[" + getTypeName(*t.OfType) + "]"
 	}
+
 	return *t.Name
 }
 
@@ -38,10 +40,12 @@ func ParseSchema(response ResponseIntrospection, filter Filter) string {
 
 	neededQueries := make(map[string]Field)
 	neededTypes := make(map[string]Type)
+
 	for _, query := range response.Data.Schema.QueryType.Fields {
 		if filter.AllowQueries == nil {
 			neededQueries[query.Name] = query
 			collectNeededTypesFromQuery(query, neededTypes, availableTypes, true)
+
 			continue
 		}
 
@@ -54,10 +58,12 @@ func ParseSchema(response ResponseIntrospection, filter Filter) string {
 	}
 
 	neededMutations := make(map[string]Field)
+
 	for _, mutation := range response.Data.Schema.MutationType.Fields {
 		if filter.AllowMutations == nil {
 			neededMutations[mutation.Name] = mutation
 			collectNeededTypesFromQuery(mutation, neededTypes, availableTypes, true)
+
 			continue
 		}
 
@@ -88,8 +94,10 @@ func filterNestedArgs(
 				continue
 			}
 		}
+
 		filtered = append(filtered, arg)
 	}
+
 	return filtered
 }
 
@@ -104,8 +112,10 @@ func filterNestedFields(
 				continue
 			}
 		}
+
 		filtered = append(filtered, field)
 	}
+
 	return filtered
 }
 
@@ -120,8 +130,10 @@ func filterInputNestedFields(
 				continue
 			}
 		}
+
 		filtered = append(filtered, field)
 	}
+
 	return filtered
 }
 
@@ -194,6 +206,7 @@ func collectTypeObject(
 	for _, field := range availableType.Fields {
 		collectType(field.Type, neededTypes, availableTypes, enableNesting, true)
 	}
+
 	for _, inputField := range availableType.InputFields {
 		collectType(inputField.Type, neededTypes, availableTypes, enableNesting, true)
 	}
@@ -246,10 +259,12 @@ func getSortedTypes(neededTypes map[string]Type) []typeInfo {
 			typ:  t,
 		})
 	}
+
 	sort.Slice(sortedTypes, func(i, j int) bool {
 		if sortedTypes[i].kind != sortedTypes[j].kind {
 			return sortedTypes[i].kind < sortedTypes[j].kind
 		}
+
 		return sortedTypes[i].name < sortedTypes[j].name
 	})
 
@@ -310,15 +325,19 @@ func renderArgs(
 	if len(args) == 0 {
 		return ""
 	}
+
 	argStrings := make([]string, 0, len(args))
+
 	args = filterNestedArgs(args, neededTypes)
 	for _, arg := range args {
 		argStr := arg.Name + ": " + getTypeName(arg.Type)
 		if arg.DefaultValue != nil {
 			argStr += " = " + *arg.DefaultValue
 		}
+
 		argStrings = append(argStrings, argStr)
 	}
+
 	return "(" + strings.Join(argStrings, ", ") + ")"
 }
 
@@ -328,19 +347,24 @@ func renderFields(
 	if len(fields) == 0 {
 		return ""
 	}
+
 	fieldStrings := make([]string, 0, len(fields))
+
 	fields = filterNestedFields(fields, neededTypes)
 	for _, field := range fields {
 		fieldStr := field.Name
 		if len(field.Args) > 0 {
 			fieldStr += renderArgs(field.Args, neededTypes)
 		}
+
 		fieldStr += ": " + getTypeName(field.Type)
 		if field.Description != nil {
 			fieldStr = `"""` + *field.Description + `"""` + "\n" + fieldStr
 		}
+
 		fieldStrings = append(fieldStrings, fieldStr)
 	}
+
 	return strings.Join(fieldStrings, "\n  ")
 }
 
@@ -350,30 +374,38 @@ func renderInputFields(
 	if len(fields) == 0 {
 		return ""
 	}
+
 	fieldStrings := make([]string, 0, len(fields))
+
 	fields = filterInputNestedFields(fields, neededTypes)
 	for _, field := range fields {
 		fieldStr := field.Name + ": " + getTypeName(field.Type)
 		if field.DefaultValue != nil {
 			fieldStr += " = " + *field.DefaultValue
 		}
+
 		if field.Description != nil {
 			fieldStr = `"""` + *field.Description + `"""` + "\n  " + fieldStr
 		}
+
 		fieldStrings = append(fieldStrings, fieldStr)
 	}
+
 	return strings.Join(fieldStrings, "\n  ")
 }
 
 func renderType(sdl *strings.Builder, t typeInfo, neededTypes map[string]Type) {
 	sdl.WriteString("type " + t.name)
+
 	if len(t.typ.Interfaces) > 0 {
 		var ifaces []string
 		for _, iface := range t.typ.Interfaces {
 			ifaces = append(ifaces, *iface.Name)
 		}
+
 		sdl.WriteString(" implements " + strings.Join(ifaces, " & "))
 	}
+
 	sdl.WriteString(" {\n  ")
 	sdl.WriteString(renderFields(t.typ.Fields, neededTypes))
 	sdl.WriteString("\n}\n\n")
@@ -388,6 +420,7 @@ func renderQuery(
 	for _, q := range queries {
 		toRender = append(toRender, q)
 	}
+
 	sort.Slice(toRender, func(i, j int) bool {
 		return toRender[i].Name < toRender[j].Name
 	})

@@ -121,6 +121,7 @@ func action(ctx context.Context, cmd *cli.Command) error {
 	if err != nil {
 		return cli.Exit(fmt.Sprintf("failed to initialize docs tools: %s", err), 1)
 	}
+
 	d.Register(mcpServer)
 
 	return start(mcpServer, cmd.String(flagBind))

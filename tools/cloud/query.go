@@ -3,12 +3,10 @@ package cloud
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/nhost/mcp-nhost/graphql"
-	"github.com/nhost/mcp-nhost/tools"
 )
 
 const (
@@ -16,6 +14,15 @@ const (
 	//nolint:lll
 	ToolGraphqlQueryInstructions = `Execute a GraphQL query against the Nhost Cloud to perform operations on projects and organizations. It also allows configuring projects hosted on Nhost Cloud. Make sure you got the schema before attempting to execute any query. If you get an error while performing a query refresh the schema in case something has changed or you did something wrong. If you get an error indicating mutations are not allowed the user may have disabled them in the server, don't retry and ask the user they need to pass --with-cloud-mutations when starting mcp-nhost to enable them. Projects are apps.`
 )
+
+func ptr[T any](v T) *T {
+	return &v
+}
+
+type GraphqlQueryRequest struct {
+	Query     string         `json:"query"`
+	Variables map[string]any `json:"variables,omitempty"`
+}
 
 func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer) {
 	t.registerGetGraphqlSchema(mcpServer)
@@ -25,10 +32,10 @@ func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer) {
 		mcp.WithToolAnnotation(
 			mcp.ToolAnnotation{
 				Title:           "Perform GraphQL Query on Nhost Cloud Platform",
-				ReadOnlyHint:    !t.withMutations,
-				DestructiveHint: t.withMutations,
-				IdempotentHint:  false,
-				OpenWorldHint:   true,
+				ReadOnlyHint:    ptr(!t.withMutations),
+				DestructiveHint: ptr(t.withMutations),
+				IdempotentHint:  ptr(false),
+				OpenWorldHint:   ptr(true),
 			},
 		),
 		mcp.WithString(
@@ -41,15 +48,14 @@ func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer) {
 			mcp.Description("variables to use in the query"),
 		),
 	)
-	mcpServer.AddTool(queryTool, t.handleGraphqlQuery)
+	mcpServer.AddTool(queryTool, mcp.NewStructuredToolHandler(t.handleGraphqlQuery))
 }
 
 func (t *Tool) handleGraphqlQuery(
-	ctx context.Context, req mcp.CallToolRequest,
+	ctx context.Context, _ mcp.CallToolRequest, args GraphqlQueryRequest,
 ) (*mcp.CallToolResult, error) {
-	request, err := tools.QueryRequestFromParams(req.Params.Arguments)
-	if err != nil {
-		return nil, err //nolint:wrapcheck
+	if args.Query == "" {
+		return mcp.NewToolResultError("query is required"), nil
 	}
 
 	allowedMutations := []string{}
@@ -61,34 +67,20 @@ func (t *Tool) handleGraphqlQuery(
 	if err := graphql.Query(
 		ctx,
 		t.graphqlURL,
-		request.Query,
-		request.Variables,
+		args.Query,
+		args.Variables,
 		&resp,
 		nil,
 		allowedMutations,
 		t.interceptors...,
 	); err != nil {
-		return nil, fmt.Errorf("failed to query graphql endpoint: %w", err)
+		return mcp.NewToolResultErrorFromErr("failed to query graphql endpoint", err), nil
 	}
 
 	b, err := json.Marshal(resp)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal response: %w", err)
+		return mcp.NewToolResultErrorFromErr("failed to marshal graphql response", err), nil
 	}
 
-	return &mcp.CallToolResult{
-		Result: mcp.Result{
-			Meta: nil,
-		},
-		Content: []mcp.Content{
-			mcp.TextContent{
-				Annotated: mcp.Annotated{
-					Annotations: nil,
-				},
-				Type: "text",
-				Text: string(b),
-			},
-		},
-		IsError: false,
-	}, nil
+	return mcp.NewToolResultStructured(resp, string(b)), nil
 }

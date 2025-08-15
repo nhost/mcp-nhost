@@ -19,6 +19,7 @@ func New(ctx context.Context) (*Mintlify, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error getting MCP config: %w", err)
 	}
+
 	return &Mintlify{
 		config: config,
 	}, nil

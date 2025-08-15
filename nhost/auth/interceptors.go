@@ -38,6 +38,7 @@ func WithPAT(
 			if err != nil {
 				return fmt.Errorf("failed to sign in with PAT: %w", err)
 			}
+
 			if resp.StatusCode() != http.StatusOK {
 				return fmt.Errorf("%w: %s\n%s", ErrSigninIn, resp.Status(), resp.Body)
 			}

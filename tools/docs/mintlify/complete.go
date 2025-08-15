@@ -87,6 +87,7 @@ func (m *Mintlify) Autocomplete(
 	// Check the response status code
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
+
 		return nil, fmt.Errorf( //nolint:err113
 			"unexpected status code: %d, body: %s", resp.StatusCode, string(bodyBytes),
 		)
