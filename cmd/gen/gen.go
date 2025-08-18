@@ -54,8 +54,7 @@ func Command() *cli.Command {
 
 func action(ctx context.Context, cmd *cli.Command) error {
 	interceptor, err := auth.WithPAT(
-		cmd.String(flagNhostAuthURL),
-		cmd.String(flagNhostPAT),
+		cmd.String(flagNhostAuthURL), cmd.String(flagNhostPAT),
 	)
 	if err != nil {
 		return cli.Exit(err.Error(), 1)
@@ -74,6 +73,7 @@ func action(ctx context.Context, cmd *cli.Command) error {
 	); err != nil {
 		return cli.Exit(err.Error(), 1)
 	}
+
 	filter := graphql.Filter{
 		AllowQueries: []graphql.Queries{
 			{

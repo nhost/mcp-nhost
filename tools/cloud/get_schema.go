@@ -20,10 +20,10 @@ func (t *Tool) registerGetGraphqlSchema(mcpServer *server.MCPServer) {
 		mcp.WithToolAnnotation(
 			mcp.ToolAnnotation{
 				Title:           "Get GraphQL Schema for Nhost Cloud Platform",
-				ReadOnlyHint:    true,
-				DestructiveHint: false,
-				IdempotentHint:  true,
-				OpenWorldHint:   true,
+				ReadOnlyHint:    ptr(true),
+				DestructiveHint: ptr(false),
+				IdempotentHint:  ptr(true),
+				OpenWorldHint:   ptr(true),
 			},
 		),
 	)
@@ -38,19 +38,5 @@ func (t *Tool) handleGetGraphqlSchema(
 		schema = schemaGraphqlWithMutations
 	}
 
-	return &mcp.CallToolResult{
-		Result: mcp.Result{
-			Meta: nil,
-		},
-		Content: []mcp.Content{
-			mcp.TextContent{
-				Annotated: mcp.Annotated{
-					Annotations: nil,
-				},
-				Type: "text",
-				Text: schema,
-			},
-		},
-		IsError: false,
-	}, nil
+	return mcp.NewToolResultStructured(schema, schema), nil
 }

@@ -3,13 +3,11 @@ package local
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/nhost/mcp-nhost/graphql"
 	"github.com/nhost/mcp-nhost/nhost/auth"
-	"github.com/nhost/mcp-nhost/tools"
 )
 
 const (
@@ -18,6 +16,16 @@ const (
 	ToolGraphqlQueryInstructions = `Execute a GraphQL query against an Nhost development project running locally via the Nhost CLI. This tool is useful to test queries and mutations during development. If you run into issues executing queries, retrieve the schema using the local-get-graphql-schema tool in case the schema has changed.`
 )
 
+func ptr[T any](v T) *T {
+	return &v
+}
+
+type GraphqlQueryRequest struct {
+	Query     string         `json:"query"`
+	Variables map[string]any `json:"variables,omitempty"`
+	Role      string         `json:"role"`
+}
+
 func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer) {
 	queryTool := mcp.NewTool(
 		ToolGraphqlQueryName,
@@ -25,10 +33,10 @@ func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer) {
 		mcp.WithToolAnnotation(
 			mcp.ToolAnnotation{
 				Title:           "Perform GraphQL Query on Nhost Development Project",
-				ReadOnlyHint:    false,
-				DestructiveHint: true,
-				IdempotentHint:  false,
-				OpenWorldHint:   true,
+				ReadOnlyHint:    ptr(false),
+				DestructiveHint: ptr(true),
+				IdempotentHint:  ptr(false),
+				OpenWorldHint:   ptr(true),
 			},
 		),
 		mcp.WithString(
@@ -36,9 +44,10 @@ func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer) {
 			mcp.Description("graphql query to perform"),
 			mcp.Required(),
 		),
-		mcp.WithString(
+		mcp.WithObject(
 			"variables",
 			mcp.Description("variables to use in the query"),
+			mcp.AdditionalProperties(true),
 		),
 		mcp.WithString(
 			"role",
@@ -48,54 +57,43 @@ func (t *Tool) registerGraphqlQuery(mcpServer *server.MCPServer) {
 			mcp.Required(),
 		),
 	)
-	mcpServer.AddTool(queryTool, t.handleGraphqlQuery)
+	mcpServer.AddTool(queryTool, mcp.NewStructuredToolHandler(t.handleGraphqlQuery))
 }
 
 func (t *Tool) handleGraphqlQuery(
-	ctx context.Context, req mcp.CallToolRequest,
+	ctx context.Context, _ mcp.CallToolRequest, args GraphqlQueryRequest,
 ) (*mcp.CallToolResult, error) {
-	request, err := tools.QueryRequestWithRoleFromParams(req.Params.Arguments)
-	if err != nil {
-		return nil, err //nolint:wrapcheck
+	if args.Query == "" {
+		return mcp.NewToolResultError("query is required"), nil
+	}
+
+	if args.Role == "" {
+		return mcp.NewToolResultError("role is required"), nil
 	}
 
 	interceptors := append( //nolint:gocritic
 		t.interceptors,
-		auth.WithRole(request.Role),
+		auth.WithRole(args.Role),
 	)
 
 	var resp graphql.Response[any]
 	if err := graphql.Query(
 		ctx,
 		t.graphqlURL,
-		request.Query,
-		request.Variables,
+		args.Query,
+		args.Variables,
 		&resp,
 		nil,
 		nil,
 		interceptors...,
 	); err != nil {
-		return nil, fmt.Errorf("failed to query graphql endpoint: %w", err)
+		return mcp.NewToolResultErrorFromErr("failed to query graphql endpoint", err), nil
 	}
 
 	b, err := json.Marshal(resp)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal response: %w", err)
+		return mcp.NewToolResultErrorFromErr("error marshalling response", err), nil
 	}
 
-	return &mcp.CallToolResult{
-		Result: mcp.Result{
-			Meta: nil,
-		},
-		Content: []mcp.Content{
-			mcp.TextContent{
-				Annotated: mcp.Annotated{
-					Annotations: nil,
-				},
-				Type: "text",
-				Text: string(b),
-			},
-		},
-		IsError: false,
-	}, nil
+	return mcp.NewToolResultStructured(resp, string(b)), nil
 }

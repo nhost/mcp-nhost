@@ -36,6 +36,7 @@ func action(ctx context.Context, cmd *cli.Command) error {
 	curVersion := cmd.Root().Version
 
 	mgr := software.NewManager()
+
 	releases, err := mgr.GetReleases(ctx, curVersion)
 	if err != nil {
 		return fmt.Errorf("failed to get releases: %w", err)
@@ -56,7 +57,9 @@ func action(ctx context.Context, cmd *cli.Command) error {
 
 	if !cmd.Bool(flagConfirm) {
 		fmt.Printf("Do you want to upgrade to %s? (y/N): ", latest.TagName) //nolint:forbidigo
+
 		var answer string
+
 		_, err := fmt.Scanln(&answer)
 		if err != nil || answer != "y" && answer != "Y" {
 			fmt.Println("Upgrade cancelled.") //nolint:forbidigo
@@ -74,10 +77,12 @@ func printVersionsSince(
 	fmt.Printf( //nolint:forbidigo
 		"Versions released since your current version (%s):\n\n", curVersion,
 	)
+
 	for _, release := range releases {
 		if release.TagName == curVersion {
 			break
 		}
+
 		fmt.Printf("# %s\n\n", release.TagName) //nolint:forbidigo
 		fmt.Println(release.Body)               //nolint:forbidigo
 		fmt.Println()                           //nolint:forbidigo
@@ -93,7 +98,8 @@ func findAsset(
 			return asset.BrowserDownloadURL, nil
 		}
 	}
-	return "", fmt.Errorf("failed to find asset for %s", want) //nolint:goerr113
+
+	return "", fmt.Errorf("failed to find asset for %s", want) //nolint:err113
 }
 
 func install(
@@ -130,11 +136,13 @@ func install(
 	}
 
 	fmt.Printf("Copying to %s...\n", curBin) //nolint:forbidigo
+
 	if err := os.Rename(tmpFile.Name(), curBin); err != nil {
 		return fmt.Errorf("failed to rename %s to %s: %w", tmpFile.Name(), curBin, err)
 	}
 
-	fmt.Println("Setting permissions...")           //nolint:forbidigo
+	fmt.Println("Setting permissions...") //nolint:forbidigo
+
 	if err := os.Chmod(curBin, 0o755); err != nil { //nolint:mnd
 		return fmt.Errorf("failed to set permissions on %s: %w", curBin, err)
 	}

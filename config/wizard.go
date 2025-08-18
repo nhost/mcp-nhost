@@ -16,10 +16,15 @@ func RunWizard() (*Config, error) {
 	fmt.Println()
 
 	cloudConfig := wizardCloud(reader)
+
 	fmt.Println()
+
 	localConfig := wizardLocal(reader)
+
 	fmt.Println()
+
 	projects := wizardProject(reader)
+
 	fmt.Println()
 
 	return &Config{
@@ -40,6 +45,7 @@ func wizardCloud(reader *bufio.Reader) *Cloud {
 			reader,
 			"Enter Personal Access Token (from https://app.nhost.io/account):",
 		)
+
 		return &Cloud{
 			PAT:             pat,
 			EnableMutations: true,
@@ -75,6 +81,7 @@ func wizardLocal(reader *bufio.Reader) *Local {
 //nolint:forbidigo
 func wizardProject(reader *bufio.Reader) []Project {
 	projects := make([]Project, 0)
+
 	fmt.Println("3. Project-Specific Access")
 	fmt.Println("   Configure LLM access to your projects' GraphQL APIs.")
 	fmt.Println(
@@ -119,13 +126,16 @@ func wizardProject(reader *bufio.Reader) []Project {
 			}
 		}
 	}
+
 	return projects
 }
 
 //nolint:forbidigo
 func promptString(reader *bufio.Reader, prompt string) string {
 	fmt.Print(prompt + " ")
+
 	input, _ := reader.ReadString('\n')
+
 	return strings.TrimSpace(input)
 }
 
@@ -133,15 +143,18 @@ func promptString(reader *bufio.Reader, prompt string) string {
 func promptYesNo(reader *bufio.Reader, prompt string) bool {
 	for {
 		fmt.Printf("%s (y/n) ", prompt)
+
 		input, _ := reader.ReadString('\n')
 		input = strings.ToLower(strings.TrimSpace(input))
 
 		if input == "y" || input == "yes" {
 			return true
 		}
+
 		if input == "n" || input == "no" {
 			return false
 		}
+
 		fmt.Println("Please answer with 'y' or 'n'")
 	}
 }
@@ -150,9 +163,11 @@ func promptYesNo(reader *bufio.Reader, prompt string) bool {
 func promptChoice(reader *bufio.Reader, prompt string, options []string) string {
 	for {
 		fmt.Printf("%s\n", prompt)
+
 		for i, opt := range options {
 			fmt.Printf("%d) %s\n", i+1, opt)
 		}
+
 		fmt.Print("Enter number: ")
 
 		input, _ := reader.ReadString('\n')
@@ -166,6 +181,7 @@ func promptChoice(reader *bufio.Reader, prompt string, options []string) string 
 				return options[1]
 			}
 		}
+
 		fmt.Println("Please select a valid option")
 	}
 }

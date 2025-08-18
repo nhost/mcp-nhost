@@ -101,5 +101,6 @@ func action(_ context.Context, cmd *cli.Command) error {
 	fmt.Println("\nConfiguration saved successfully!")
 	fmt.Println("Note: Review the documentation for additional configuration options,")
 	fmt.Println("      especially for fine-tuning LLM access permissions.")
+
 	return nil
 }

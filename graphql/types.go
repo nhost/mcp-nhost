@@ -22,7 +22,7 @@ func (k *Kind) UnmarshalJSON(data []byte) error {
 		string(KindInputObject):
 		*k = Kind(kind)
 	default:
-		return fmt.Errorf("invalid kind: %s", kind) //nolint:goerr113
+		return fmt.Errorf("invalid kind: %s", kind) //nolint:err113
 	}
 
 	return nil

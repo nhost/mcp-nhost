@@ -87,8 +87,10 @@ func GetConfigPath() string {
 		if err != nil {
 			return "mcp-nhost.toml"
 		}
+
 		configHome = filepath.Join(homeDir, ".config")
 	}
+
 	return filepath.Join(configHome, "nhost", "mcp-nhost.toml")
 }
 
@@ -104,13 +106,17 @@ func Load(path string) (*Config, error) {
 
 	var config Config
 	if err := decoder.Decode(&config); err != nil {
-		var decodeErr *toml.DecodeError
-		var strictErr *toml.StrictMissingError
+		var (
+			decodeErr *toml.DecodeError
+			strictErr *toml.StrictMissingError
+		)
+
 		if errors.As(err, &decodeErr) {
-			return nil, errors.New("\n" + decodeErr.String()) //nolint:goerr113
+			return nil, errors.New("\n" + decodeErr.String()) //nolint:err113
 		} else if errors.As(err, &strictErr) {
-			return nil, errors.New("\n" + strictErr.String()) //nolint:goerr113
+			return nil, errors.New("\n" + strictErr.String()) //nolint:err113
 		}
+
 		return nil, fmt.Errorf("failed to unmarshal config file: %w", err)
 	}
 
@@ -118,6 +124,7 @@ func Load(path string) (*Config, error) {
 		if config.Local.GraphqlURL == nil {
 			config.Local.GraphqlURL = ptr(DefaultLocalGraphqlURL)
 		}
+
 		if config.Local.ConfigServerURL == nil {
 			config.Local.ConfigServerURL = ptr(DefaultLocalConfigServerURL)
 		}

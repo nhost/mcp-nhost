@@ -3,11 +3,9 @@ package docs
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
-	"github.com/nhost/mcp-nhost/tools"
 	"github.com/nhost/mcp-nhost/tools/docs/mintlify"
 )
 
@@ -17,6 +15,14 @@ const (
 	ToolSearchInstructions = `Search Nhost's official documentation. Use this tool to look for information about Nhost's features, APIs, guides, etc. Follow relevant links to get more details.`
 )
 
+func ptr[T any](v T) *T {
+	return &v
+}
+
+type SearchRequest struct {
+	Query string `json:"query"`
+}
+
 func (t *Tool) registerSearch(mcpServer *server.MCPServer) {
 	configServerSchemaTool := mcp.NewTool(
 		ToolSearchName,
@@ -24,10 +30,10 @@ func (t *Tool) registerSearch(mcpServer *server.MCPServer) {
 		mcp.WithToolAnnotation(
 			mcp.ToolAnnotation{
 				Title:           "Search Nhost Docs",
-				ReadOnlyHint:    true,
-				DestructiveHint: false,
-				IdempotentHint:  true,
-				OpenWorldHint:   true,
+				ReadOnlyHint:    ptr(true),
+				DestructiveHint: ptr(false),
+				IdempotentHint:  ptr(true),
+				OpenWorldHint:   ptr(true),
 			},
 		),
 		mcp.WithString(
@@ -36,21 +42,20 @@ func (t *Tool) registerSearch(mcpServer *server.MCPServer) {
 			mcp.Required(),
 		),
 	)
-	mcpServer.AddTool(configServerSchemaTool, t.handleSearch)
+	mcpServer.AddTool(configServerSchemaTool, mcp.NewStructuredToolHandler(t.handleSearch))
 }
 
 func (t *Tool) handleSearch(
-	ctx context.Context, req mcp.CallToolRequest,
+	ctx context.Context, _ mcp.CallToolRequest, args SearchRequest,
 ) (*mcp.CallToolResult, error) {
-	query, err := tools.FromParams[string](req.Params.Arguments, "query")
-	if err != nil {
-		return nil, err
+	if args.Query == "" {
+		return mcp.NewToolResultError("query is required"), nil
 	}
 
 	resp, err := t.mintlify.Autocomplete(
 		ctx,
 		mintlify.AutocompleteRequest{
-			Query:          query,
+			Query:          args.Query,
 			PageSize:       10, //nolint:mnd
 			SearchType:     "full_text",
 			ExtendResults:  true,
@@ -58,27 +63,13 @@ func (t *Tool) handleSearch(
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error calling mintlify: %w", err)
+		return mcp.NewToolResultErrorFromErr("error calling mintlify", err), nil
 	}
 
 	b, err := json.Marshal(resp)
 	if err != nil {
-		return nil, fmt.Errorf("error marshalling response: %w", err)
+		return mcp.NewToolResultErrorFromErr("error marshalling response", err), nil
 	}
 
-	return &mcp.CallToolResult{
-		Result: mcp.Result{
-			Meta: nil,
-		},
-		Content: []mcp.Content{
-			mcp.TextContent{
-				Annotated: mcp.Annotated{
-					Annotations: nil,
-				},
-				Type: "text",
-				Text: string(b),
-			},
-		},
-		IsError: false,
-	}, nil
+	return mcp.NewToolResultStructured(resp, string(b)), nil
 }

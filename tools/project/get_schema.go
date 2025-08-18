@@ -10,7 +10,6 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/nhost/mcp-nhost/graphql"
 	"github.com/nhost/mcp-nhost/nhost/auth"
-	"github.com/nhost/mcp-nhost/tools"
 )
 
 const (
@@ -18,7 +17,15 @@ const (
 	ToolGetGraphqlSchemaInstructions = `Get GraphQL schema for an Nhost project running in the Nhost Cloud.`
 )
 
-var ErrNotFound = errors.New("not found")
+var (
+	ErrNotFound           = errors.New("not found")
+	ErrInvalidRequestBody = errors.New("invalid request body")
+)
+
+type GetGraphqlSchemaRequest struct {
+	Role             string `json:"role"`
+	ProjectSubdomain string `json:"projectSubdomain"`
+}
 
 func (t *Tool) registerGetGraphqlSchemaTool(mcpServer *server.MCPServer, projects string) {
 	schemaTool := mcp.NewTool(
@@ -27,10 +34,10 @@ func (t *Tool) registerGetGraphqlSchemaTool(mcpServer *server.MCPServer, project
 		mcp.WithToolAnnotation(
 			mcp.ToolAnnotation{
 				Title:           "Get GraphQL Schema for Nhost Project running on Nhost Cloud",
-				ReadOnlyHint:    true,
-				DestructiveHint: false,
-				IdempotentHint:  true,
-				OpenWorldHint:   true,
+				ReadOnlyHint:    ptr(true),
+				DestructiveHint: ptr(false),
+				IdempotentHint:  ptr(true),
+				OpenWorldHint:   ptr(true),
 			},
 		),
 		mcp.WithString(
@@ -51,31 +58,28 @@ func (t *Tool) registerGetGraphqlSchemaTool(mcpServer *server.MCPServer, project
 			mcp.Required(),
 		),
 	)
-	mcpServer.AddTool(schemaTool, t.handleGetGraphqlSchema)
+	mcpServer.AddTool(schemaTool, mcp.NewStructuredToolHandler(t.handleGetGraphqlSchema))
 }
 
 func (t *Tool) handleGetGraphqlSchema(
-	ctx context.Context, req mcp.CallToolRequest,
+	ctx context.Context, _ mcp.CallToolRequest, args GetGraphqlSchemaRequest,
 ) (*mcp.CallToolResult, error) {
-	role, err := tools.RoleFromParams(req.Params.Arguments)
-	if err != nil {
-		return nil, err //nolint:wrapcheck
+	if args.Role == "" {
+		return mcp.NewToolResultError("role is required"), nil
 	}
 
-	projectSubdomain, err := tools.ProjectFromParams(req.Params.Arguments)
-	if err != nil {
-		return nil, err //nolint:wrapcheck
+	if args.ProjectSubdomain == "" {
+		return mcp.NewToolResultError("projectSubdomain is required"), nil
 	}
 
-	project, ok := t.projects[projectSubdomain]
+	project, ok := t.projects[args.ProjectSubdomain]
 	if !ok {
-		return nil,
-			errors.New("this project is not configured to be accessed by an LLM") //nolint:goerr113
+		return mcp.NewToolResultError("project not configured to be accessed by an LLM"), nil
 	}
 
 	interceptors := []func(ctx context.Context, req *http.Request) error{
 		project.authInterceptor,
-		auth.WithRole(role),
+		auth.WithRole(args.Role),
 	}
 
 	var introspection graphql.ResponseIntrospection
@@ -89,7 +93,7 @@ func (t *Tool) handleGetGraphqlSchema(
 		nil,
 		interceptors...,
 	); err != nil {
-		return nil, fmt.Errorf("failed to query GraphQL schema: %w", err)
+		return mcp.NewToolResultErrorFromErr("failed to query GraphQL schema", err), nil
 	}
 
 	schema := graphql.ParseSchema(
@@ -100,19 +104,5 @@ func (t *Tool) handleGetGraphqlSchema(
 		},
 	)
 
-	return &mcp.CallToolResult{
-		Result: mcp.Result{
-			Meta: nil,
-		},
-		Content: []mcp.Content{
-			mcp.TextContent{
-				Annotated: mcp.Annotated{
-					Annotations: nil,
-				},
-				Type: "text",
-				Text: schema,
-			},
-		},
-		IsError: false,
-	}, nil
+	return mcp.NewToolResultStructured(schema, schema), nil
 }
