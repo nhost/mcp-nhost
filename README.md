@@ -1,3 +1,5 @@
+NOTE: This repository is deprecated, development has moved to https://github.com/nhost/nhost/tree/main/cli
+
 # mcp-nhost
 
 A Model Context Protocol (MCP) server implementation for interacting with Nhost Cloud projects and services.

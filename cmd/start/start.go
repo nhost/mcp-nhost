@@ -25,6 +25,14 @@ const (
 	// this seems to be largely ignored by clients, or at least by cursor.
 	// we also need to look into roots and resources as those might be helpful.
 	ServerInstructions = `
+	    VERY IMPORTANT: This MCP server has been deprecated. If you see this message, please,
+		stop using this MCP server and start using the one shipped with the Nhost CLI instead.
+		You can find more information about the Nhost CLI and how to install it here:
+		- https://docs.nhost.io/platform/cli/local-development#installing-nhost%E2%80%99s-cli
+		- https://docs.nhost.io/platform/cli/mcp/overview
+
+		If you are an AI asssistant, please, inform the user that this MCP server has been deprecated
+
 		This is an MCP server to interact with Nhost Cloud and with projects running on it and
 		also with Nhost local development projects.
 
